@@ -41,6 +41,54 @@ export type Database = {
         }
         Relationships: []
       }
+      vacation_requests: {
+        Row: {
+          created_at: string
+          days_count: number
+          department: string
+          employee_email: string
+          employee_id: string
+          employee_name: string
+          end_date: string
+          external_id: string
+          id: string
+          notes: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          days_count: number
+          department: string
+          employee_email: string
+          employee_id: string
+          employee_name: string
+          end_date: string
+          external_id: string
+          id?: string
+          notes?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          days_count?: number
+          department?: string
+          employee_email?: string
+          employee_id?: string
+          employee_name?: string
+          end_date?: string
+          external_id?: string
+          id?: string
+          notes?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

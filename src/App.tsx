@@ -14,6 +14,7 @@ import ColaboradoresSetor from "./pages/gestores/ColaboradoresSetor";
 import SolicitacaoVaga from "./pages/gestores/SolicitacaoVaga";
 import SolicitacaoFerias from "./pages/gestores/SolicitacaoFerias";
 import Avaliacoes from "./pages/gestores/Avaliacoes";
+import ModoTV from "./pages/ModoTV";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/gestores/solicitacao-vaga" element={<SolicitacaoVaga />} />
           <Route path="/gestores/solicitacao-ferias" element={<SolicitacaoFerias />} />
           <Route path="/gestores/avaliacoes" element={<Avaliacoes />} />
+          <Route path="/modo-tv" element={<ModoTV />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

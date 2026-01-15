@@ -15,6 +15,7 @@ import ColaboradoresSetor from "./pages/gestores/ColaboradoresSetor";
 import SolicitacaoVaga from "./pages/gestores/SolicitacaoVaga";
 import SolicitacaoFerias from "./pages/gestores/SolicitacaoFerias";
 import Avaliacoes from "./pages/gestores/Avaliacoes";
+import SolicitarFerias from "./pages/SolicitarFerias";
 
 const ModoTV = lazy(() => import("./pages/ModoTV"));
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/gestores/solicitacao-vaga" element={<SolicitacaoVaga />} />
           <Route path="/gestores/solicitacao-ferias" element={<SolicitacaoFerias />} />
           <Route path="/gestores/avaliacoes" element={<Avaliacoes />} />
+          <Route path="/solicitar-ferias" element={<SolicitarFerias />} />
           <Route
             path="/modo-tv"
             element={

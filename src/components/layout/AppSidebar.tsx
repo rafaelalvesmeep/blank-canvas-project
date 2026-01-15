@@ -5,14 +5,12 @@ import {
   Users,
   Briefcase,
   Calendar,
-  ClipboardCheck,
-  Settings,
   ChevronDown,
   Menu,
   X,
   Tv,
   UserCog,
-  LogOut,
+  Settings,
   List,
   PlusCircle,
   UsersRound,
@@ -30,8 +28,7 @@ interface NavItem {
   children?: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }[];
 }
 
-// TODO: Replace with actual user role from auth context
-const isAdmin = true; // Temporary - will be replaced with real auth logic
+const isAdmin = true;
 
 const rhNavItems: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -65,7 +62,6 @@ export function AppSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
-  // Determina quais menus devem estar expandidos baseado na rota atual
   const getExpandedItemsFromRoute = () => {
     const expanded: string[] = [];
     rhNavItems.forEach((item) => {
@@ -73,9 +69,7 @@ export function AppSidebar() {
         const isChildActive = item.children.some((child) => 
           location.pathname === child.url || location.pathname.startsWith(child.url + "/")
         );
-        if (isChildActive) {
-          expanded.push(item.title);
-        }
+        if (isChildActive) expanded.push(item.title);
       }
     });
     return expanded;
@@ -83,73 +77,49 @@ export function AppSidebar() {
 
   const [expandedItems, setExpandedItems] = useState<string[]>(getExpandedItemsFromRoute);
 
-  // Atualiza os itens expandidos quando a rota muda
-  useState(() => {
-    const activeParents = getExpandedItemsFromRoute();
-    activeParents.forEach((parent) => {
-      if (!expandedItems.includes(parent)) {
-        setExpandedItems((prev) => [...prev, parent]);
-      }
-    });
-  });
-
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) =>
-      prev.includes(title)
-        ? prev.filter((item) => item !== title)
-        : [...prev, title]
+      prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title]
     );
   };
 
   const isActive = (url: string) => location.pathname === url;
   const isParentActive = (item: NavItem) => {
-    if (item.children) {
-      return item.children.some((child) => location.pathname.startsWith(child.url));
-    }
+    if (item.children) return item.children.some((child) => location.pathname.startsWith(child.url));
     return location.pathname.startsWith(item.url);
   };
 
   return (
     <>
-      {/* Mobile Menu Button */}
       <Button
         variant="ghost"
         size="icon"
         className="fixed left-4 top-4 z-50 lg:hidden text-foreground"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
-      {/* Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar text-sidebar-foreground transition-transform duration-300 lg:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
+      <aside className={cn(
+        "fixed left-0 top-0 z-40 h-screen w-60 bg-sidebar text-sidebar-foreground transition-transform duration-200 lg:translate-x-0",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent">
-              <UserCog className="h-5 w-5 text-white" />
+          <div className="flex h-14 items-center gap-3 border-b border-sidebar-border px-5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <UserCog className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Meep RH</h1>
-              <p className="text-xs text-sidebar-foreground/60">Sistema de Gestão</p>
+              <h1 className="text-sm font-semibold text-white">Meep RH</h1>
+              <p className="text-[10px] text-sidebar-foreground/60">Sistema de Gestão</p>
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+          <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
             {rhNavItems.map((item) => (
               <div key={item.title}>
                 {item.children ? (
@@ -157,43 +127,33 @@ export function AppSidebar() {
                     <button
                       onClick={() => toggleExpanded(item.title)}
                       className={cn(
-                        "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
                         isParentActive(item)
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <item.icon className="h-5 w-5" />
+                      <div className="flex items-center gap-2.5">
+                        <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </div>
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 transition-transform",
-                          expandedItems.includes(item.title) && "rotate-180"
-                        )}
-                      />
+                      <ChevronDown className={cn("h-4 w-4 transition-transform", expandedItems.includes(item.title) && "rotate-180")} />
                     </button>
                     {expandedItems.includes(item.title) && (
-                      <div className="ml-4 mt-1 space-y-1">
+                      <div className="ml-4 mt-0.5 space-y-0.5">
                         {item.children.map((child) => (
                           <NavLink
                             key={child.url}
                             to={child.url}
-                            onClick={() => {
-                              // Apenas fecha o sidebar mobile, não afeta o submenu expandido
-                              if (window.innerWidth < 1024) {
-                                setIsOpen(false);
-                              }
-                            }}
+                            onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
                             className={cn(
-                              "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                              "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors",
                               isActive(child.url)
                                 ? "bg-primary text-primary-foreground"
-                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
                             )}
                           >
-                            <child.icon className="h-4 w-4" />
+                            <child.icon className="h-3.5 w-3.5" />
                             {child.title}
                           </NavLink>
                         ))}
@@ -203,27 +163,21 @@ export function AppSidebar() {
                 ) : (
                   <NavLink
                     to={item.url}
-                    onClick={() => {
-                      // Apenas fecha o sidebar mobile
-                      if (window.innerWidth < 1024) {
-                        setIsOpen(false);
-                      }
-                    }}
+                    onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
                       isActive(item.url)
                         ? "bg-primary text-primary-foreground"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
                   </NavLink>
                 )}
               </div>
             ))}
           </nav>
-
         </div>
       </aside>
     </>

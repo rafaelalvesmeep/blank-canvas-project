@@ -38,32 +38,15 @@ export function Header({ showSearch = false }: HeaderProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-[10px] flex items-center justify-center">
-                3
-              </Badge>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel>Notificações</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-              <span className="font-medium">Nova solicitação de vaga</span>
-              <span className="text-xs text-muted-foreground">
-                Setor de TI solicitou vaga de Desenvolvedor
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-              <span className="font-medium">Férias para aprovação</span>
-              <span className="text-xs text-muted-foreground">
-                3 solicitações pendentes de aprovação
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-              <span className="font-medium">Avaliação concluída</span>
-              <span className="text-xs text-muted-foreground">
-                Avaliação trimestral de João Silva
-              </span>
-            </DropdownMenuItem>
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Bell className="h-10 w-10 text-muted-foreground/50 mb-2" />
+              <p className="text-sm text-muted-foreground">Nenhuma notificação</p>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
 

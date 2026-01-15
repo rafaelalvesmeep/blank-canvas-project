@@ -24,6 +24,8 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  Sparkles,
+  Target,
 } from "lucide-react";
 
 interface Vaga {
@@ -52,8 +54,8 @@ const statusConfig = {
 
 const prioridadeColors = {
   baixa: "bg-muted text-muted-foreground",
-  media: "bg-chart-3/10 text-chart-3",
-  alta: "bg-destructive/10 text-destructive",
+  media: "bg-chart-3/10 text-chart-3 border-chart-3/30",
+  alta: "bg-destructive/10 text-destructive border-destructive/30",
 };
 
 export default function Vagas() {
@@ -82,21 +84,28 @@ export default function Vagas() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Page Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Briefcase className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-chart-1 to-primary shadow-lg">
+                <Briefcase className="h-7 w-7 text-white" />
+              </div>
+              <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-md">
+                <Target className="h-3.5 w-3.5 text-white" />
+              </div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold sm:text-3xl">Vagas</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Vagas
+              </h1>
+              <p className="text-muted-foreground mt-1">
                 Gerencie as solicitações de vagas
               </p>
             </div>
           </div>
-          <Button variant="gradient" className="gap-2">
+          <Button variant="gradient" className="gap-2 shadow-lg hover:shadow-xl transition-all">
             <Plus className="h-4 w-4" />
             Nova Solicitação
           </Button>
@@ -104,29 +113,38 @@ export default function Vagas() {
 
         {/* Quick Stats */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="bg-gradient-to-br from-chart-1/5 to-chart-1/10 border-chart-1/20">
-            <CardContent className="flex items-center gap-4 p-6">
-              <Briefcase className="h-8 w-8 text-chart-1" />
+          <Card className="bg-gradient-to-br from-chart-1/5 via-chart-1/10 to-transparent border-chart-1/20 hover:shadow-lg transition-all group overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-chart-1/10 rounded-full blur-2xl" />
+            <CardContent className="flex items-center gap-4 p-6 relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chart-1/20 group-hover:scale-110 transition-transform">
+                <Briefcase className="h-6 w-6 text-chart-1" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">{stats.abertas}</p>
+                <p className="text-3xl font-bold">{stats.abertas}</p>
                 <p className="text-sm text-muted-foreground">Vagas em Aberto</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-success/5 to-success/10 border-success/20">
-            <CardContent className="flex items-center gap-4 p-6">
-              <CheckCircle2 className="h-8 w-8 text-success" />
+          <Card className="bg-gradient-to-br from-success/5 via-success/10 to-transparent border-success/20 hover:shadow-lg transition-all group overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 rounded-full blur-2xl" />
+            <CardContent className="flex items-center gap-4 p-6 relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/20 group-hover:scale-110 transition-transform">
+                <CheckCircle2 className="h-6 w-6 text-success" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">{stats.fechadas}</p>
+                <p className="text-3xl font-bold">{stats.fechadas}</p>
                 <p className="text-sm text-muted-foreground">Fechadas (mês)</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 border-chart-4/20">
-            <CardContent className="flex items-center gap-4 p-6">
-              <Clock className="h-8 w-8 text-chart-4" />
+          <Card className="bg-gradient-to-br from-chart-4/5 via-chart-4/10 to-transparent border-chart-4/20 hover:shadow-lg transition-all group overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-chart-4/10 rounded-full blur-2xl" />
+            <CardContent className="flex items-center gap-4 p-6 relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chart-4/20 group-hover:scale-110 transition-transform">
+                <Clock className="h-6 w-6 text-chart-4" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">{stats.tempoMedio} dias</p>
+                <p className="text-3xl font-bold">{stats.tempoMedio} dias</p>
                 <p className="text-sm text-muted-foreground">Tempo Médio</p>
               </div>
             </CardContent>
@@ -134,15 +152,15 @@ export default function Vagas() {
         </div>
 
         {/* Filters and Tabs */}
-        <Card>
-          <CardContent className="p-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Card className="border-border/50 shadow-lg overflow-hidden">
+          <CardContent className="p-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <TabsList>
-                  <TabsTrigger value="todas">Todas</TabsTrigger>
-                  <TabsTrigger value="abertas">Abertas</TabsTrigger>
-                  <TabsTrigger value="fechadas">Fechadas</TabsTrigger>
-                  <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
+                <TabsList className="bg-muted/50">
+                  <TabsTrigger value="todas" className="data-[state=active]:bg-background">Todas</TabsTrigger>
+                  <TabsTrigger value="abertas" className="data-[state=active]:bg-background">Abertas</TabsTrigger>
+                  <TabsTrigger value="fechadas" className="data-[state=active]:bg-background">Fechadas</TabsTrigger>
+                  <TabsTrigger value="canceladas" className="data-[state=active]:bg-background">Canceladas</TabsTrigger>
                 </TabsList>
                 <div className="flex gap-2">
                   <div className="relative">
@@ -151,11 +169,11 @@ export default function Vagas() {
                       placeholder="Buscar vaga..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9 w-[200px]"
+                      className="pl-9 w-[200px] bg-background/50 border-border/50"
                     />
                   </div>
                   <Select value={filterSetor} onValueChange={setFilterSetor}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] bg-background/50 border-border/50">
                       <Building2 className="mr-2 h-4 w-4" />
                       <SelectValue placeholder="Setor" />
                     </SelectTrigger>
@@ -172,84 +190,91 @@ export default function Vagas() {
               </div>
 
               <TabsContent value={activeTab} className="mt-0">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredVagas.map((vaga) => {
-                    const StatusIcon = statusConfig[vaga.status].icon;
-                    return (
-                      <Card
-                        key={vaga.id}
-                        className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/30"
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-1">
-                              <CardTitle className="text-base group-hover:text-primary transition-colors">
-                                {vaga.cargo}
-                              </CardTitle>
-                              <CardDescription className="flex items-center gap-1">
-                                <Building2 className="h-3 w-3" />
-                                {vaga.setor}
-                              </CardDescription>
-                            </div>
-                            <Badge
-                              variant="outline"
-                              className={prioridadeColors[vaga.prioridade]}
-                            >
-                              {vaga.prioridade}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <Badge
-                              variant="outline"
-                              className={statusConfig[vaga.status].color}
-                            >
-                              <StatusIcon className="mr-1 h-3 w-3" />
-                              {statusConfig[vaga.status].label}
-                            </Badge>
-                            <span className="text-muted-foreground">
-                              {vaga.tipo} • {vaga.quantidade} vaga{vaga.quantidade > 1 ? "s" : ""}
-                            </span>
-                          </div>
-
-                          <div className="space-y-2 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4" />
-                              <span>Solicitado por {vaga.solicitante}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              <span>{vaga.dataSolicitacao}</span>
-                            </div>
-                            {vaga.status !== "fechada" && vaga.status !== "cancelada" && (
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
-                                <span className={vaga.diasAberta > 10 ? "text-warning font-medium" : ""}>
-                                  {vaga.diasAberta} dias em aberto
-                                </span>
+                {filteredVagas.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 mb-4">
+                      <Briefcase className="h-10 w-10 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-lg font-medium text-muted-foreground">Nenhuma vaga encontrada</p>
+                    <p className="text-sm text-muted-foreground/70 mt-1">Crie uma nova solicitação para começar</p>
+                    <Button variant="gradient" className="mt-6 gap-2">
+                      <Plus className="h-4 w-4" />
+                      Nova Solicitação
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredVagas.map((vaga) => {
+                      const StatusIcon = statusConfig[vaga.status].icon;
+                      return (
+                        <Card
+                          key={vaga.id}
+                          className="group cursor-pointer transition-all hover:shadow-lg hover:border-primary/30 border-border/50 overflow-hidden"
+                        >
+                          <CardHeader className="pb-3 bg-gradient-to-r from-muted/20 to-transparent">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-1">
+                                <CardTitle className="text-base group-hover:text-primary transition-colors">
+                                  {vaga.cargo}
+                                </CardTitle>
+                                <CardDescription className="flex items-center gap-1">
+                                  <Building2 className="h-3 w-3" />
+                                  {vaga.setor}
+                                </CardDescription>
                               </div>
-                            )}
-                          </div>
+                              <Badge
+                                variant="outline"
+                                className={prioridadeColors[vaga.prioridade]}
+                              >
+                                {vaga.prioridade}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between text-sm">
+                              <Badge
+                                variant="outline"
+                                className={statusConfig[vaga.status].color}
+                              >
+                                <StatusIcon className="mr-1 h-3 w-3" />
+                                {statusConfig[vaga.status].label}
+                              </Badge>
+                              <span className="text-muted-foreground">
+                                {vaga.tipo} • {vaga.quantidade} vaga{vaga.quantidade > 1 ? "s" : ""}
+                              </span>
+                            </div>
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                          >
-                            Ver detalhes
-                            <ArrowUpRight className="h-4 w-4" />
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                            <div className="space-y-2 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                <span>Solicitado por {vaga.solicitante}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <span>{vaga.dataSolicitacao}</span>
+                              </div>
+                              {vaga.status !== "fechada" && vaga.status !== "cancelada" && (
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4" />
+                                  <span className={vaga.diasAberta > 10 ? "text-warning font-medium" : ""}>
+                                    {vaga.diasAberta} dias em aberto
+                                  </span>
+                                </div>
+                              )}
+                            </div>
 
-                {filteredVagas.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">Nenhuma vaga encontrada</p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all"
+                            >
+                              Ver detalhes
+                              <ArrowUpRight className="h-4 w-4" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </TabsContent>

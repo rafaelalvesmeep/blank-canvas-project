@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   ArrowRight,
   TrendingUp,
+  Sparkles,
+  Activity,
 } from "lucide-react";
 import {
   AreaChart,
@@ -35,20 +37,35 @@ const openVacancies: { id: number; cargo: string; setor: string; dias: number; p
 export default function Dashboard() {
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Page Header */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <TrendingUp className="h-5 w-5 text-primary" />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg">
+                <TrendingUp className="h-7 w-7 text-white" />
+              </div>
+              <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-md">
+                <Sparkles className="h-3.5 w-3.5 text-white" />
+              </div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold sm:text-3xl">Dashboard</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                Dashboard
+              </h1>
+              <p className="text-muted-foreground flex items-center gap-2 mt-1">
+                <Activity className="h-4 w-4 text-primary" />
                 Visão geral do RH • Janeiro 2026
               </p>
             </div>
           </div>
+          <Badge variant="outline" className="px-4 py-2 bg-primary/5 border-primary/20 text-primary">
+            <span className="relative flex h-2 w-2 mr-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            Atualizado agora
+          </Badge>
         </div>
 
         {/* KPI Cards */}
@@ -82,12 +99,19 @@ export default function Dashboard() {
         {/* Charts Row */}
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Headcount Chart */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-lg">Evolução do Headcount</CardTitle>
-              <CardDescription>Número de colaboradores nos últimos 6 meses</CardDescription>
+          <Card className="lg:col-span-2 overflow-hidden border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Activity className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Evolução do Headcount</CardTitle>
+                  <CardDescription>Número de colaboradores nos últimos 6 meses</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={headcountData}>
@@ -104,7 +128,8 @@ export default function Dashboard() {
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
+                        borderRadius: "12px",
+                        boxShadow: "0 10px 40px -10px rgba(0,0,0,0.2)",
                       }}
                     />
                     <Area
@@ -122,12 +147,19 @@ export default function Dashboard() {
           </Card>
 
           {/* Gender Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Distribuição por Gênero</CardTitle>
-              <CardDescription>Colaboradores ativos</CardDescription>
+          <Card className="overflow-hidden border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                  <Users className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Distribuição por Gênero</CardTitle>
+                  <CardDescription>Colaboradores ativos</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -148,53 +180,67 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex justify-center gap-6 mt-4">
-                {genderData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2">
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-sm text-muted-foreground">
-                      {item.name}: {item.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {genderData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-4">
+                  <p className="text-sm text-muted-foreground">Sem dados disponíveis</p>
+                </div>
+              ) : (
+                <div className="flex justify-center gap-6 mt-4">
+                  {genderData.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {item.name}: {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
         {/* Open Vacancies */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Vagas em Aberto</CardTitle>
-              <CardDescription>Recrutamento em andamento</CardDescription>
+        <Card className="overflow-hidden border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-1/10">
+                <Briefcase className="h-5 w-5 text-chart-1" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Vagas em Aberto</CardTitle>
+                <CardDescription>Recrutamento em andamento</CardDescription>
+              </div>
             </div>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors">
               Ver todas <ArrowRight className="h-4 w-4" />
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {openVacancies.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground">Nenhuma vaga em aberto</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50 mb-4">
+                  <Briefcase className="h-8 w-8 text-muted-foreground/50" />
+                </div>
+                <p className="text-lg font-medium text-muted-foreground">Nenhuma vaga em aberto</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Todas as posições estão preenchidas</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {openVacancies.map((vaga) => (
                   <div
                     key={vaga.id}
-                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                    className="flex items-center justify-between rounded-xl border border-border/50 p-4 transition-all hover:bg-muted/30 hover:border-primary/30 hover:shadow-md group"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                        <Briefcase className="h-5 w-5 text-primary" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                        <Briefcase className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium">{vaga.cargo}</p>
+                        <p className="font-semibold group-hover:text-primary transition-colors">{vaga.cargo}</p>
                         <p className="text-sm text-muted-foreground">{vaga.setor}</p>
                       </div>
                     </div>
@@ -211,6 +257,7 @@ export default function Dashboard() {
                             ? "default"
                             : "secondary"
                         }
+                        className="capitalize"
                       >
                         {vaga.prioridade}
                       </Badge>
@@ -224,38 +271,50 @@ export default function Dashboard() {
 
         {/* Quick Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardContent className="flex items-center gap-4 p-6">
-              <CheckCircle2 className="h-8 w-8 text-primary" />
+          <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary/20 hover:border-primary/40 transition-all hover:shadow-lg group overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="flex items-center gap-4 p-6 relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 group-hover:scale-110 transition-transform">
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-3xl font-bold">0</p>
                 <p className="text-sm text-muted-foreground">Vagas Fechadas (mês)</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 border-chart-2/20">
-            <CardContent className="flex items-center gap-4 p-6">
-              <Clock className="h-8 w-8 text-chart-2" />
+          <Card className="bg-gradient-to-br from-chart-2/5 via-chart-2/10 to-chart-2/5 border-chart-2/20 hover:border-chart-2/40 transition-all hover:shadow-lg group overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-chart-2/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="flex items-center gap-4 p-6 relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chart-2/20 group-hover:scale-110 transition-transform">
+                <Clock className="h-6 w-6 text-chart-2" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">— dias</p>
+                <p className="text-3xl font-bold">— dias</p>
                 <p className="text-sm text-muted-foreground">Tempo médio fechamento</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 border-chart-4/20">
-            <CardContent className="flex items-center gap-4 p-6">
-              <Users className="h-8 w-8 text-chart-4" />
+          <Card className="bg-gradient-to-br from-chart-4/5 via-chart-4/10 to-chart-4/5 border-chart-4/20 hover:border-chart-4/40 transition-all hover:shadow-lg group overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-chart-4/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="flex items-center gap-4 p-6 relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chart-4/20 group-hover:scale-110 transition-transform">
+                <Users className="h-6 w-6 text-chart-4" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-3xl font-bold">0</p>
                 <p className="text-sm text-muted-foreground">Férias pendentes</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-chart-3/5 to-chart-3/10 border-chart-3/20">
-            <CardContent className="flex items-center gap-4 p-6">
-              <TrendingUp className="h-8 w-8 text-chart-3" />
+          <Card className="bg-gradient-to-br from-chart-3/5 via-chart-3/10 to-chart-3/5 border-chart-3/20 hover:border-chart-3/40 transition-all hover:shadow-lg group overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-chart-3/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="flex items-center gap-4 p-6 relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chart-3/20 group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-6 w-6 text-chart-3" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-3xl font-bold">0</p>
                 <p className="text-sm text-muted-foreground">Avaliações este mês</p>
               </div>
             </CardContent>

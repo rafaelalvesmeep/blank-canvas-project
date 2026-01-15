@@ -15,20 +15,28 @@ interface KPICardProps {
 
 export function KPICard({ title, value, subtitle, icon: Icon, trend, className }: KPICardProps) {
   return (
-    <div className={cn("kpi-card group", className)}>
-      <div className="flex items-start justify-between">
+    <div className={cn(
+      "relative overflow-hidden rounded-xl border border-border/50 bg-card p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:border-primary/30 group",
+      className
+    )}>
+      {/* Background gradient effect */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+      
+      <div className="relative flex items-start justify-between">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
+          <p className="text-4xl font-bold tracking-tight">{value}</p>
           {subtitle && (
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           )}
           {trend && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 pt-1">
               <span
                 className={cn(
-                  "text-xs font-medium",
-                  trend.isPositive ? "text-success" : "text-destructive"
+                  "text-xs font-semibold px-1.5 py-0.5 rounded",
+                  trend.isPositive 
+                    ? "text-success bg-success/10" 
+                    : "text-destructive bg-destructive/10"
                 )}
               >
                 {trend.isPositive ? "+" : ""}{trend.value}%
@@ -37,8 +45,8 @@ export function KPICard({ title, value, subtitle, icon: Icon, trend, className }
             </div>
           )}
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-          <Icon className="h-6 w-6" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 group-hover:shadow-lg">
+          <Icon className="h-7 w-7" />
         </div>
       </div>
     </div>

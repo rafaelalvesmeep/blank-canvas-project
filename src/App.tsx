@@ -10,6 +10,10 @@ import Colaboradores from "./pages/Colaboradores";
 import Vagas from "./pages/Vagas";
 import Ferias from "./pages/Ferias";
 import NotFound from "./pages/NotFound";
+import ColaboradoresSetor from "./pages/gestores/ColaboradoresSetor";
+import SolicitacaoVaga from "./pages/gestores/SolicitacaoVaga";
+import SolicitacaoFerias from "./pages/gestores/SolicitacaoFerias";
+import Avaliacoes from "./pages/gestores/Avaliacoes";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +31,10 @@ const App = () => (
           <Route path="/vagas" element={<Vagas />} />
           <Route path="/vagas/nova" element={<Vagas />} />
           <Route path="/ferias" element={<Ferias />} />
+          <Route path="/gestores/colaboradores" element={<ColaboradoresSetor />} />
+          <Route path="/gestores/solicitacao-vaga" element={<SolicitacaoVaga />} />
+          <Route path="/gestores/solicitacao-ferias" element={<SolicitacaoFerias />} />
+          <Route path="/gestores/avaliacoes" element={<Avaliacoes />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

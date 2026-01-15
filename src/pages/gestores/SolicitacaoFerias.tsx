@@ -13,7 +13,7 @@ import {
 import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, Umbrella, Sun, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseClient } from "@/integrations/supabase/safeClient";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -43,6 +43,9 @@ export default function SolicitacaoFerias() {
   const { data: solicitacoes = [], isLoading } = useQuery({
     queryKey: ["vacation-requests"],
     queryFn: async () => {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error("Backend indisponível: variáveis de ambiente não carregadas.");
+
       const { data, error } = await supabase
         .from("vacation_requests")
         .select("*")
@@ -55,6 +58,9 @@ export default function SolicitacaoFerias() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error("Backend indisponível: variáveis de ambiente não carregadas.");
+
       const { error } = await supabase
         .from("vacation_requests")
         .update({ status })
@@ -65,8 +71,8 @@ export default function SolicitacaoFerias() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["vacation-requests"] });
       toast.success(
-        variables.status === "aprovada" 
-          ? "Solicitação aprovada com sucesso!" 
+        variables.status === "aprovada"
+          ? "Solicitação aprovada com sucesso!"
           : "Solicitação reprovada."
       );
     },

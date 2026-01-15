@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { getSupabaseClient } from "@/integrations/supabase/safeClient";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,17 +47,14 @@ export default function ModoTV() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const url = import.meta.env.VITE_SUPABASE_URL;
-    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const supabase = getSupabaseClient();
 
-    if (!url || !key) {
+    if (!supabase) {
       setEnvMissing(true);
       return;
     }
 
-    import("@/integrations/supabase/client")
-      .then((m) => setSupabaseClient(m.supabase as unknown as SupabaseClient<Database>))
-      .catch(() => setEnvMissing(true));
+    setSupabaseClient(supabase as unknown as SupabaseClient<Database>);
   }, []);
 
   const fetchMedia = async () => {

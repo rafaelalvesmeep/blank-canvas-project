@@ -47,6 +47,7 @@ const rhNavItems: NavItem[] = [
     children: [
       { title: "Colaboradores do Setor", url: "/gestores/colaboradores" },
       { title: "Solicitação de Vaga", url: "/gestores/solicitacao-vaga" },
+      { title: "Solicitação de Férias", url: "/gestores/solicitacao-ferias" },
       { title: "Avaliações", url: "/gestores/avaliacoes" },
     ]
   },

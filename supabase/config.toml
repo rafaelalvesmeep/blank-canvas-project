@@ -1,1 +1,4 @@
 project_id = "sbasetmesbveocyeauua"
+
+[functions.webhook-vacation-request]
+verify_jwt = false

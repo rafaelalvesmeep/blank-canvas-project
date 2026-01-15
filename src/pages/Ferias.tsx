@@ -40,76 +40,9 @@ interface SolicitacaoFerias {
   observacao?: string;
 }
 
-const solicitacoes: SolicitacaoFerias[] = [
-  {
-    id: 1,
-    colaborador: "João Ferreira",
-    cargo: "Desenvolvedor Backend",
-    setor: "Tecnologia",
-    avatar: "JF",
-    dataInicio: "01/02/2026",
-    dataFim: "15/02/2026",
-    dias: 15,
-    status: "pendente",
-    dataSolicitacao: "10/01/2026",
-  },
-  {
-    id: 2,
-    colaborador: "Ana Silva",
-    cargo: "Analista de RH",
-    setor: "Recursos Humanos",
-    avatar: "AS",
-    dataInicio: "20/02/2026",
-    dataFim: "05/03/2026",
-    dias: 14,
-    status: "pendente",
-    dataSolicitacao: "12/01/2026",
-  },
-  {
-    id: 3,
-    colaborador: "Carlos Santos",
-    cargo: "Designer UX/UI",
-    setor: "Design",
-    avatar: "CS",
-    dataInicio: "10/03/2026",
-    dataFim: "24/03/2026",
-    dias: 15,
-    status: "pendente",
-    dataSolicitacao: "14/01/2026",
-    observacao: "Viagem em família programada",
-  },
-  {
-    id: 4,
-    colaborador: "Maria Oliveira",
-    cargo: "Gerente de Projetos",
-    setor: "Operações",
-    avatar: "MO",
-    dataInicio: "15/01/2026",
-    dataFim: "29/01/2026",
-    dias: 15,
-    status: "aprovada",
-    dataSolicitacao: "20/12/2025",
-  },
-  {
-    id: 5,
-    colaborador: "Pedro Lima",
-    cargo: "Analista Financeiro",
-    setor: "Financeiro",
-    avatar: "PL",
-    dataInicio: "01/02/2026",
-    dataFim: "10/02/2026",
-    dias: 10,
-    status: "reprovada",
-    dataSolicitacao: "05/01/2026",
-    observacao: "Período de fechamento contábil",
-  },
-];
+const solicitacoes: SolicitacaoFerias[] = [];
 
-const feriasVencendo = [
-  { colaborador: "Roberto Alves", setor: "Comercial", diasRestantes: 5, saldo: 30 },
-  { colaborador: "Lucia Mendes", setor: "Administrativo", diasRestantes: 15, saldo: 25 },
-  { colaborador: "Fernando Costa", setor: "Tecnologia", diasRestantes: 30, saldo: 20 },
-];
+const feriasVencendo: { colaborador: string; setor: string; diasRestantes: number; saldo: number }[] = [];
 
 const statusConfig = {
   pendente: { label: "Pendente", color: "bg-warning/10 text-warning border-warning/20", icon: Clock },

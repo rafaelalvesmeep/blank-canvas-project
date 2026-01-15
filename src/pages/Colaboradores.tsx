@@ -37,68 +37,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const colaboradores = [
-  {
-    id: 1,
-    nome: "Rafael Coura",
-    cargo: "Vibe Coder Jr",
-    setor: "Tecnologia",
-    tipo: "CLT",
-    admissao: "01/03/2024",
-    status: "ativo",
-    avatar: "RC",
-  },
-  {
-    id: 2,
-    nome: "Ana Silva",
-    cargo: "Analista de RH",
-    setor: "Recursos Humanos",
-    tipo: "CLT",
-    admissao: "15/06/2023",
-    status: "ativo",
-    avatar: "AS",
-  },
-  {
-    id: 3,
-    nome: "Carlos Santos",
-    cargo: "Designer UX/UI",
-    setor: "Design",
-    tipo: "PJ",
-    admissao: "10/01/2024",
-    status: "ativo",
-    avatar: "CS",
-  },
-  {
-    id: 4,
-    nome: "Maria Oliveira",
-    cargo: "Gerente de Projetos",
-    setor: "Operações",
-    tipo: "CLT",
-    admissao: "20/09/2022",
-    status: "ferias",
-    avatar: "MO",
-  },
-  {
-    id: 5,
-    nome: "João Ferreira",
-    cargo: "Desenvolvedor Backend",
-    setor: "Tecnologia",
-    tipo: "CLT",
-    admissao: "05/11/2023",
-    status: "ativo",
-    avatar: "JF",
-  },
-  {
-    id: 6,
-    nome: "Fernanda Costa",
-    cargo: "Estagiária de Marketing",
-    setor: "Marketing",
-    tipo: "Estágio",
-    admissao: "02/01/2026",
-    status: "ativo",
-    avatar: "FC",
-  },
-];
+interface Colaborador {
+  id: number;
+  nome: string;
+  cargo: string;
+  setor: string;
+  tipo: string;
+  admissao: string;
+  status: string;
+  avatar: string;
+}
+
+const colaboradores: Colaborador[] = [];
 
 const statusColors: Record<string, string> = {
   ativo: "bg-success/10 text-success border-success/20",

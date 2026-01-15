@@ -13,6 +13,12 @@ import {
   Tv,
   UserCog,
   LogOut,
+  List,
+  PlusCircle,
+  UsersRound,
+  FileText,
+  CalendarPlus,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,7 +27,7 @@ interface NavItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
-  children?: { title: string; url: string }[];
+  children?: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }[];
 }
 
 // TODO: Replace with actual user role from auth context
@@ -34,8 +40,8 @@ const rhNavItems: NavItem[] = [
     url: "/vagas", 
     icon: Briefcase,
     children: [
-      { title: "Todas as Vagas", url: "/vagas" },
-      { title: "Nova Solicitação", url: "/vagas/nova" },
+      { title: "Todas as Vagas", url: "/vagas", icon: List },
+      { title: "Nova Solicitação", url: "/vagas/nova", icon: PlusCircle },
     ]
   },
   { title: "Colaboradores", url: "/colaboradores", icon: Users },
@@ -45,10 +51,10 @@ const rhNavItems: NavItem[] = [
     url: "/gestores", 
     icon: UserCog,
     children: [
-      { title: "Colaboradores do Setor", url: "/gestores/colaboradores" },
-      { title: "Solicitação de Vaga", url: "/gestores/solicitacao-vaga" },
-      { title: "Solicitação de Férias", url: "/gestores/solicitacao-ferias" },
-      { title: "Avaliações", url: "/gestores/avaliacoes" },
+      { title: "Colaboradores do Setor", url: "/gestores/colaboradores", icon: UsersRound },
+      { title: "Solicitação de Vaga", url: "/gestores/solicitacao-vaga", icon: FileText },
+      { title: "Solicitação de Férias", url: "/gestores/solicitacao-ferias", icon: CalendarPlus },
+      { title: "Avaliações", url: "/gestores/avaliacoes", icon: Star },
     ]
   },
   { title: "Modo TV", url: "/modo-tv", icon: Tv },
@@ -142,19 +148,20 @@ export function AppSidebar() {
                       />
                     </button>
                     {expandedItems.includes(item.title) && (
-                      <div className="ml-8 mt-1 space-y-1">
+                      <div className="ml-4 mt-1 space-y-1">
                         {item.children.map((child) => (
                           <NavLink
                             key={child.url}
                             to={child.url}
                             onClick={() => setIsOpen(false)}
                             className={cn(
-                              "block rounded-lg px-3 py-2 text-sm transition-colors",
+                              "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
                               isActive(child.url)
                                 ? "bg-primary text-primary-foreground"
                                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                             )}
                           >
+                            <child.icon className="h-4 w-4" />
                             {child.title}
                           </NavLink>
                         ))}

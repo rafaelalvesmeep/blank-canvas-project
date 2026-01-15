@@ -167,14 +167,6 @@ export function AppSidebar() {
             ))}
           </nav>
 
-          {/* User Section */}
-          <div className="border-t border-sidebar-border p-4">
-            <div className="flex items-center justify-center rounded-lg bg-sidebar-accent/50 p-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-semibold text-white">
-                RC
-              </div>
-            </div>
-          </div>
         </div>
       </aside>
     </>

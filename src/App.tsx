@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -14,7 +15,8 @@ import ColaboradoresSetor from "./pages/gestores/ColaboradoresSetor";
 import SolicitacaoVaga from "./pages/gestores/SolicitacaoVaga";
 import SolicitacaoFerias from "./pages/gestores/SolicitacaoFerias";
 import Avaliacoes from "./pages/gestores/Avaliacoes";
-import ModoTV from "./pages/ModoTV";
+
+const ModoTV = lazy(() => import("./pages/ModoTV"));
 
 const queryClient = new QueryClient();
 
@@ -36,7 +38,14 @@ const App = () => (
           <Route path="/gestores/solicitacao-vaga" element={<SolicitacaoVaga />} />
           <Route path="/gestores/solicitacao-ferias" element={<SolicitacaoFerias />} />
           <Route path="/gestores/avaliacoes" element={<Avaliacoes />} />
-          <Route path="/modo-tv" element={<ModoTV />} />
+          <Route
+            path="/modo-tv"
+            element={
+              <Suspense fallback={null}>
+                <ModoTV />
+              </Suspense>
+            }
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

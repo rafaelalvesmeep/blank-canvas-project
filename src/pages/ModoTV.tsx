@@ -1,33 +1,36 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Upload, 
-  Play, 
-  Trash2, 
-  Image as ImageIcon, 
-  Video, 
+import {
+  Upload,
+  Play,
+  Trash2,
+  Image as ImageIcon,
+  Video,
   Maximize,
   X,
   ChevronLeft,
   ChevronRight,
-  GripVertical
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface MediaItem {
   id: string;
   file_name: string;
-  file_type: 'image' | 'video';
+  file_type: string;
   file_url: string;
   display_order: number;
   created_at: string;
 }
 
 export default function ModoTV() {
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient<Database> | null>(null);
+  const [envMissing, setEnvMissing] = useState(false);
+
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -37,120 +40,139 @@ export default function ModoTV() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Avoid crashing the whole app if env vars aren't ready
+  useEffect(() => {
+    const url = import.meta.env.VITE_SUPABASE_URL;
+    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!url || !key) {
+      setEnvMissing(true);
+      return;
+    }
+
+    import("@/integrations/supabase/client")
+      .then((m) => setSupabaseClient(m.supabase as unknown as SupabaseClient<Database>))
+      .catch(() => setEnvMissing(true));
+  }, []);
+
   const fetchMedia = async () => {
-    const { data, error } = await supabase
-      .from('tv_media')
-      .select('*')
-      .order('display_order', { ascending: true });
+    if (!supabaseClient) return;
+
+    const { data, error } = await supabaseClient
+      .from("tv_media")
+      .select("*")
+      .order("display_order", { ascending: true });
 
     if (error) {
       toast({
         title: "Erro ao carregar mídia",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    setMediaItems((data || []) as MediaItem[]);
+    setMediaItems((data ?? []) as unknown as MediaItem[]);
   };
 
   useEffect(() => {
     fetchMedia();
-  }, []);
+  }, [supabaseClient]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!supabaseClient) {
+      toast({
+        title: "Backend indisponível",
+        description: "As variáveis do backend ainda não carregaram. Tente recarregar a página.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     setUploading(true);
 
     for (const file of Array.from(files)) {
-      const isImage = file.type.startsWith('image/');
-      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
 
       if (!isImage && !isVideo) {
         toast({
           title: "Tipo de arquivo inválido",
           description: "Apenas imagens e vídeos são permitidos.",
-          variant: "destructive"
+          variant: "destructive",
         });
         continue;
       }
 
       const fileName = `${Date.now()}-${file.name}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('tv-media')
+
+      const { error: uploadError } = await supabaseClient.storage
+        .from("tv-media")
         .upload(fileName, file);
 
       if (uploadError) {
         toast({
           title: "Erro no upload",
           description: uploadError.message,
-          variant: "destructive"
+          variant: "destructive",
         });
         continue;
       }
 
-      const { data: urlData } = supabase.storage
-        .from('tv-media')
+      const { data: urlData } = supabaseClient.storage
+        .from("tv-media")
         .getPublicUrl(fileName);
 
-      const maxOrder = mediaItems.length > 0 
-        ? Math.max(...mediaItems.map(m => m.display_order)) 
-        : 0;
+      const maxOrder = mediaItems.length > 0 ? Math.max(...mediaItems.map((m) => m.display_order)) : 0;
 
-      const { error: insertError } = await supabase
-        .from('tv_media')
-        .insert({
-          file_name: file.name,
-          file_type: isImage ? 'image' : 'video',
-          file_url: urlData.publicUrl,
-          display_order: maxOrder + 1
-        });
+      const { error: insertError } = await supabaseClient.from("tv_media").insert({
+        file_name: file.name,
+        file_type: isImage ? "image" : "video",
+        file_url: urlData.publicUrl,
+        display_order: maxOrder + 1,
+      });
 
       if (insertError) {
         toast({
           title: "Erro ao salvar",
           description: insertError.message,
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     }
 
     setUploading(false);
     fetchMedia();
-    
+
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
 
     toast({
       title: "Upload concluído",
-      description: "Arquivos enviados com sucesso!"
+      description: "Arquivos enviados com sucesso!",
     });
   };
 
   const handleDelete = async (item: MediaItem) => {
-    const fileName = item.file_url.split('/').pop();
-    
+    if (!supabaseClient) return;
+
+    const fileName = item.file_url.split("/").pop();
+
     if (fileName) {
-      await supabase.storage
-        .from('tv-media')
-        .remove([fileName]);
+      await supabaseClient.storage.from("tv-media").remove([fileName]);
     }
 
-    const { error } = await supabase
-      .from('tv_media')
-      .delete()
-      .eq('id', item.id);
+    const { error } = await supabaseClient.from("tv_media").delete().eq("id", item.id);
 
     if (error) {
       toast({
         title: "Erro ao excluir",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -158,7 +180,7 @@ export default function ModoTV() {
     fetchMedia();
     toast({
       title: "Excluído",
-      description: "Arquivo removido com sucesso."
+      description: "Arquivo removido com sucesso.",
     });
   };
 
@@ -298,6 +320,16 @@ export default function ModoTV() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {envMissing && (
+          <Card>
+            <CardContent className="py-6">
+              <p className="text-sm text-muted-foreground">
+                O backend ainda não carregou neste ambiente (variáveis VITE_SUPABASE_URL/KEY ausentes). Abra o Preview do editor ou recarregue a página.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Modo TV</h1>

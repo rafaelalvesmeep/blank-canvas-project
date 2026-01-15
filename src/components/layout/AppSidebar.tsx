@@ -24,6 +24,9 @@ interface NavItem {
   children?: { title: string; url: string }[];
 }
 
+// TODO: Replace with actual user role from auth context
+const isAdmin = true; // Temporary - will be replaced with real auth logic
+
 const rhNavItems: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { 
@@ -37,9 +40,18 @@ const rhNavItems: NavItem[] = [
   },
   { title: "Colaboradores", url: "/colaboradores", icon: Users },
   { title: "Férias", url: "/ferias", icon: Calendar },
-  { title: "Avaliações", url: "/avaliacoes", icon: ClipboardCheck },
+  { 
+    title: "Gestores", 
+    url: "/gestores", 
+    icon: UserCog,
+    children: [
+      { title: "Colaboradores do Setor", url: "/gestores/colaboradores" },
+      { title: "Solicitação de Vaga", url: "/gestores/solicitacao-vaga" },
+      { title: "Avaliações", url: "/gestores/avaliacoes" },
+    ]
+  },
   { title: "Modo TV", url: "/modo-tv", icon: Tv },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
+  ...(isAdmin ? [{ title: "Configurações", url: "/configuracoes", icon: Settings }] : []),
 ];
 
 export function AppSidebar() {

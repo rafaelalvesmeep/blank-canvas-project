@@ -15,51 +15,22 @@ import {
 } from "@/components/ui/table";
 import { ClipboardCheck, Star, TrendingUp, Users, Calendar } from "lucide-react";
 
-// Mock data - será substituído por dados reais
-const colaboradores = [
-  {
-    id: "1",
-    nome: "Ana Silva",
-    cargo: "Desenvolvedora Frontend",
-    ultimaAvaliacao: "2024-10-15",
-    nota: 4.5,
-    status: "concluida",
-    avatar: "",
-  },
-  {
-    id: "2",
-    nome: "Carlos Santos",
-    cargo: "Desenvolvedor Backend",
-    ultimaAvaliacao: "2024-10-15",
-    nota: 4.2,
-    status: "concluida",
-    avatar: "",
-  },
-  {
-    id: "3",
-    nome: "Maria Oliveira",
-    cargo: "UX Designer",
-    ultimaAvaliacao: null,
-    nota: null,
-    status: "pendente",
-    avatar: "",
-  },
-  {
-    id: "4",
-    nome: "João Pereira",
-    cargo: "DevOps Engineer",
-    ultimaAvaliacao: "2024-10-15",
-    nota: 4.8,
-    status: "concluida",
-    avatar: "",
-  },
-];
+// TODO: Será substituído por dados reais do banco
+const colaboradores: {
+  id: string;
+  nome: string;
+  cargo: string;
+  ultimaAvaliacao: string | null;
+  nota: number | null;
+  status: string;
+  avatar: string;
+}[] = [];
 
 const avaliacoesPendentes = colaboradores.filter((c) => c.status === "pendente").length;
 const avaliacoesConcluidas = colaboradores.filter((c) => c.status === "concluida").length;
-const mediaNota = colaboradores
-  .filter((c) => c.nota !== null)
-  .reduce((acc, c) => acc + (c.nota || 0), 0) / avaliacoesConcluidas;
+const mediaNota = avaliacoesConcluidas > 0
+  ? colaboradores.filter((c) => c.nota !== null).reduce((acc, c) => acc + (c.nota || 0), 0) / avaliacoesConcluidas
+  : 0;
 
 const statusColors: Record<string, string> = {
   pendente: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",

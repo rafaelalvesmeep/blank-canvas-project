@@ -23,33 +23,15 @@ import {
 } from "@/components/ui/table";
 import { Briefcase, Plus, Clock, CheckCircle, XCircle } from "lucide-react";
 
-// Mock data - será substituído por dados reais
-const solicitacoes = [
-  {
-    id: "1",
-    cargo: "Desenvolvedor Full Stack",
-    tipo: "CLT",
-    urgencia: "alta",
-    status: "pendente",
-    dataSolicitacao: "2025-01-10",
-  },
-  {
-    id: "2",
-    cargo: "Analista de Dados",
-    tipo: "CLT",
-    urgencia: "media",
-    status: "aprovada",
-    dataSolicitacao: "2025-01-08",
-  },
-  {
-    id: "3",
-    cargo: "Designer UI/UX",
-    tipo: "PJ",
-    urgencia: "baixa",
-    status: "reprovada",
-    dataSolicitacao: "2025-01-05",
-  },
-];
+// TODO: Será substituído por dados reais do banco
+const solicitacoes: {
+  id: string;
+  cargo: string;
+  tipo: string;
+  urgencia: string;
+  status: string;
+  dataSolicitacao: string;
+}[] = [];
 
 const statusColors: Record<string, string> = {
   pendente: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",

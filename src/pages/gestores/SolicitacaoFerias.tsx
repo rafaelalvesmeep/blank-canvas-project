@@ -27,43 +27,18 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-// Mock data - será substituído por dados reais
-const colaboradores = [
-  { id: "1", nome: "Ana Silva" },
-  { id: "2", nome: "Carlos Santos" },
-  { id: "3", nome: "Maria Oliveira" },
-  { id: "4", nome: "João Pereira" },
-];
+// TODO: Será substituído por dados reais do banco
+const colaboradores: { id: string; nome: string }[] = [];
 
-const solicitacoes = [
-  {
-    id: "1",
-    colaborador: "Ana Silva",
-    dataInicio: "2025-02-01",
-    dataFim: "2025-02-15",
-    dias: 15,
-    status: "pendente",
-    dataSolicitacao: "2025-01-10",
-  },
-  {
-    id: "2",
-    colaborador: "Carlos Santos",
-    dataInicio: "2025-03-10",
-    dataFim: "2025-03-24",
-    dias: 15,
-    status: "aprovada",
-    dataSolicitacao: "2025-01-08",
-  },
-  {
-    id: "3",
-    colaborador: "Maria Oliveira",
-    dataInicio: "2025-01-20",
-    dataFim: "2025-01-30",
-    dias: 10,
-    status: "reprovada",
-    dataSolicitacao: "2025-01-05",
-  },
-];
+const solicitacoes: {
+  id: string;
+  colaborador: string;
+  dataInicio: string;
+  dataFim: string;
+  dias: number;
+  status: string;
+  dataSolicitacao: string;
+}[] = [];
 
 const statusColors: Record<string, string> = {
   pendente: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",

@@ -15,45 +15,16 @@ import {
 } from "@/components/ui/table";
 import { Search, Users, Mail, Phone } from "lucide-react";
 
-// Mock data - será substituído por dados reais
-const colaboradores = [
-  {
-    id: "1",
-    nome: "Ana Silva",
-    cargo: "Desenvolvedora Frontend",
-    email: "ana.silva@empresa.com",
-    telefone: "(11) 99999-0001",
-    status: "ativo",
-    avatar: "",
-  },
-  {
-    id: "2",
-    nome: "Carlos Santos",
-    cargo: "Desenvolvedor Backend",
-    email: "carlos.santos@empresa.com",
-    telefone: "(11) 99999-0002",
-    status: "ativo",
-    avatar: "",
-  },
-  {
-    id: "3",
-    nome: "Maria Oliveira",
-    cargo: "UX Designer",
-    email: "maria.oliveira@empresa.com",
-    telefone: "(11) 99999-0003",
-    status: "ferias",
-    avatar: "",
-  },
-  {
-    id: "4",
-    nome: "João Pereira",
-    cargo: "DevOps Engineer",
-    email: "joao.pereira@empresa.com",
-    telefone: "(11) 99999-0004",
-    status: "ativo",
-    avatar: "",
-  },
-];
+// TODO: Será substituído por dados reais do banco
+const colaboradores: {
+  id: string;
+  nome: string;
+  cargo: string;
+  email: string;
+  telefone: string;
+  status: string;
+  avatar: string;
+}[] = [];
 
 const statusColors: Record<string, string> = {
   ativo: "bg-green-500/20 text-green-400 border-green-500/30",

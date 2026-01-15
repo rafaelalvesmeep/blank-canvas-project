@@ -2,18 +2,7 @@ import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -22,12 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar as CalendarIcon, Plus, Clock, CheckCircle, XCircle, Umbrella, Sun, Sparkles } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-
-const colaboradores: { id: string; nome: string }[] = [];
+import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, Umbrella, Sun, Link2, Check } from "lucide-react";
+import { toast } from "sonner";
 
 const solicitacoes: {
   id: string;
@@ -59,14 +44,30 @@ const StatusIcon = ({ status }: { status: string }) => {
 };
 
 export default function SolicitacaoFerias() {
-  const [showForm, setShowForm] = useState(false);
-  const [dataInicio, setDataInicio] = useState<Date>();
-  const [dataFim, setDataFim] = useState<Date>();
+  const [copied, setCopied] = useState(false);
 
   const stats = {
     pendentes: solicitacoes.filter((s) => s.status === "pendente").length,
     aprovadas: solicitacoes.filter((s) => s.status === "aprovada").length,
     total: solicitacoes.length,
+  };
+
+  const handleCopyLink = async () => {
+    const baseUrl = window.location.origin;
+    const link = `${baseUrl}/solicitar-ferias`;
+    
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      toast.success("Link copiado!", {
+        description: "Compartilhe o link com os colaboradores para que solicitem férias.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Erro ao copiar link", {
+        description: "Tente novamente.",
+      });
+    }
   };
 
   return (
@@ -88,17 +89,26 @@ export default function SolicitacaoFerias() {
                 Solicitação de Férias
               </h1>
               <p className="text-muted-foreground mt-1">
-                Lance as férias dos colaboradores da sua equipe
+                Gerencie as solicitações de férias dos colaboradores
               </p>
             </div>
           </div>
           <Button 
             variant="gradient" 
             className="gap-2 shadow-lg hover:shadow-xl transition-all"
-            onClick={() => setShowForm(!showForm)}
+            onClick={handleCopyLink}
           >
-            <Plus className="h-4 w-4" />
-            Nova Solicitação
+            {copied ? (
+              <>
+                <Check className="h-4 w-4" />
+                Link Copiado!
+              </>
+            ) : (
+              <>
+                <Link2 className="h-4 w-4" />
+                Copiar Link de Solicitação
+              </>
+            )}
           </Button>
         </div>
 
@@ -142,119 +152,6 @@ export default function SolicitacaoFerias() {
           </Card>
         </div>
 
-        {/* Form */}
-        {showForm && (
-          <Card className="border-border/50 shadow-lg overflow-hidden">
-            <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-transparent">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20">
-                  <Plus className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Nova Solicitação de Férias</CardTitle>
-                  <CardDescription>Selecione o colaborador e o período de férias</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Colaborador</Label>
-                  <Select>
-                    <SelectTrigger className="bg-background/50 border-border/50">
-                      <SelectValue placeholder="Selecione o colaborador..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {colaboradores.map((colab) => (
-                        <SelectItem key={colab.id} value={colab.id}>
-                          {colab.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Tipo de Férias</Label>
-                  <Select>
-                    <SelectTrigger className="bg-background/50 border-border/50">
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="integral">Integral (30 dias)</SelectItem>
-                      <SelectItem value="fracionada">Fracionada</SelectItem>
-                      <SelectItem value="venda">Venda de 10 dias</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Data de Início</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal bg-background/50 border-border/50",
-                          !dataInicio && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dataInicio ? format(dataInicio, "PPP", { locale: ptBR }) : "Selecione..."}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={dataInicio}
-                        onSelect={setDataInicio}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-2">
-                  <Label>Data de Término</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal bg-background/50 border-border/50",
-                          !dataFim && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dataFim ? format(dataFim, "PPP", { locale: ptBR }) : "Selecione..."}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={dataFim}
-                        onSelect={setDataFim}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="observacoes">Observações</Label>
-                  <Textarea
-                    id="observacoes"
-                    placeholder="Observações adicionais..."
-                    rows={3}
-                    className="bg-background/50 border-border/50"
-                  />
-                </div>
-              </div>
-              <div className="mt-6 flex gap-2">
-                <Button variant="gradient">Enviar Solicitação</Button>
-                <Button variant="outline" onClick={() => setShowForm(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Minhas Solicitações */}
         <Card className="border-border/50 shadow-lg overflow-hidden">
@@ -273,14 +170,14 @@ export default function SolicitacaoFerias() {
                   <Umbrella className="h-10 w-10 text-muted-foreground/50" />
                 </div>
                 <p className="text-lg font-medium text-muted-foreground">Nenhuma solicitação encontrada</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Crie uma nova solicitação para começar</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Compartilhe o link com os colaboradores para que solicitem férias</p>
                 <Button 
                   variant="gradient" 
                   className="mt-6 gap-2"
-                  onClick={() => setShowForm(true)}
+                  onClick={handleCopyLink}
                 >
-                  <Plus className="h-4 w-4" />
-                  Nova Solicitação
+                  {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+                  {copied ? "Link Copiado!" : "Copiar Link de Solicitação"}
                 </Button>
               </div>
             ) : (

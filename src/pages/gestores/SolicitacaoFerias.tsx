@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,18 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, Umbrella, Sun, Link2, Check } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, Umbrella, Sun, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-const solicitacoes: {
-  id: string;
-  colaborador: string;
-  dataInicio: string;
-  dataFim: string;
-  dias: number;
-  status: string;
-  dataSolicitacao: string;
-}[] = [];
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Link } from "react-router-dom";
 
 const statusColors: Record<string, string> = {
   pendente: "bg-warning/10 text-warning border-warning/20",
@@ -44,7 +38,42 @@ const StatusIcon = ({ status }: { status: string }) => {
 };
 
 export default function SolicitacaoFerias() {
-  const [copied, setCopied] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: solicitacoes = [], isLoading } = useQuery({
+    queryKey: ["vacation-requests"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vacation_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from("vacation_requests")
+        .update({ status })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["vacation-requests"] });
+      toast.success(
+        variables.status === "aprovada" 
+          ? "Solicitação aprovada com sucesso!" 
+          : "Solicitação reprovada."
+      );
+    },
+    onError: () => {
+      toast.error("Erro ao atualizar status da solicitação");
+    },
+  });
 
   const stats = {
     pendentes: solicitacoes.filter((s) => s.status === "pendente").length,
@@ -52,22 +81,12 @@ export default function SolicitacaoFerias() {
     total: solicitacoes.length,
   };
 
-  const handleCopyLink = async () => {
-    const baseUrl = window.location.origin;
-    const link = `${baseUrl}/solicitar-ferias`;
-    
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      toast.success("Link copiado!", {
-        description: "Compartilhe o link com os colaboradores para que solicitem férias.",
-      });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast.error("Erro ao copiar link", {
-        description: "Tente novamente.",
-      });
-    }
+  const handleApprove = (id: string) => {
+    updateStatusMutation.mutate({ id, status: "aprovada" });
+  };
+
+  const handleReject = (id: string) => {
+    updateStatusMutation.mutate({ id, status: "reprovada" });
   };
 
   return (
@@ -94,21 +113,14 @@ export default function SolicitacaoFerias() {
             </div>
           </div>
           <Button 
-            variant="gradient" 
-            className="gap-2 shadow-lg hover:shadow-xl transition-all"
-            onClick={handleCopyLink}
+            variant="outline" 
+            className="gap-2"
+            asChild
           >
-            {copied ? (
-              <>
-                <Check className="h-4 w-4" />
-                Link Copiado!
-              </>
-            ) : (
-              <>
-                <Link2 className="h-4 w-4" />
-                Copiar Link de Solicitação
-              </>
-            )}
+            <Link to="/docs/integracao-ferias">
+              <FileText className="h-4 w-4" />
+              Documentação da API
+            </Link>
           </Button>
         </div>
 
@@ -152,8 +164,7 @@ export default function SolicitacaoFerias() {
           </Card>
         </div>
 
-
-        {/* Minhas Solicitações */}
+        {/* Solicitações */}
         <Card className="border-border/50 shadow-lg overflow-hidden">
           <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
             <div className="flex items-center gap-3">
@@ -164,20 +175,28 @@ export default function SolicitacaoFerias() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {solicitacoes.length === 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : solicitacoes.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 mb-4">
                   <Umbrella className="h-10 w-10 text-muted-foreground/50" />
                 </div>
                 <p className="text-lg font-medium text-muted-foreground">Nenhuma solicitação encontrada</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Compartilhe o link com os colaboradores para que solicitem férias</p>
+                <p className="text-sm text-muted-foreground/70 mt-1 max-w-md">
+                  As solicitações de férias serão exibidas aqui quando recebidas via integração com o sistema SIM.
+                </p>
                 <Button 
-                  variant="gradient" 
+                  variant="outline" 
                   className="mt-6 gap-2"
-                  onClick={handleCopyLink}
+                  asChild
                 >
-                  {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-                  {copied ? "Link Copiado!" : "Copiar Link de Solicitação"}
+                  <Link to="/docs/integracao-ferias">
+                    <FileText className="h-4 w-4" />
+                    Ver Documentação da API
+                  </Link>
                 </Button>
               </div>
             ) : (
@@ -185,6 +204,7 @@ export default function SolicitacaoFerias() {
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-border/50">
                     <TableHead>Colaborador</TableHead>
+                    <TableHead>Setor</TableHead>
                     <TableHead>Período</TableHead>
                     <TableHead>Dias</TableHead>
                     <TableHead>Solicitado em</TableHead>
@@ -195,18 +215,24 @@ export default function SolicitacaoFerias() {
                 <TableBody>
                   {solicitacoes.map((sol) => (
                     <TableRow key={sol.id} className="group hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-medium group-hover:text-primary transition-colors">{sol.colaborador}</TableCell>
                       <TableCell>
-                        {new Date(sol.dataInicio).toLocaleDateString("pt-BR")} -{" "}
-                        {new Date(sol.dataFim).toLocaleDateString("pt-BR")}
+                        <div>
+                          <p className="font-medium group-hover:text-primary transition-colors">{sol.employee_name}</p>
+                          <p className="text-xs text-muted-foreground">{sol.employee_email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{sol.department}</TableCell>
+                      <TableCell>
+                        {format(new Date(sol.start_date), "dd/MM/yyyy", { locale: ptBR })} -{" "}
+                        {format(new Date(sol.end_date), "dd/MM/yyyy", { locale: ptBR })}
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="bg-primary/10 text-primary">
-                          {sol.dias} dias
+                          {sol.days_count} dias
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(sol.dataSolicitacao).toLocaleDateString("pt-BR")}
+                        {format(new Date(sol.created_at), "dd/MM/yyyy", { locale: ptBR })}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -217,9 +243,32 @@ export default function SolicitacaoFerias() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
-                          Detalhes
-                        </Button>
+                        {sol.status === "pendente" ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="hover:bg-success/10 hover:text-success"
+                              onClick={() => handleApprove(sol.id)}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Aprovar
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => handleReject(sol.id)}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Reprovar
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

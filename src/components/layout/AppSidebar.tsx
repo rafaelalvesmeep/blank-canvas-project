@@ -63,8 +63,35 @@ const rhNavItems: NavItem[] = [
 
 export function AppSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
+
+  // Determina quais menus devem estar expandidos baseado na rota atual
+  const getExpandedItemsFromRoute = () => {
+    const expanded: string[] = [];
+    rhNavItems.forEach((item) => {
+      if (item.children) {
+        const isChildActive = item.children.some((child) => 
+          location.pathname === child.url || location.pathname.startsWith(child.url + "/")
+        );
+        if (isChildActive) {
+          expanded.push(item.title);
+        }
+      }
+    });
+    return expanded;
+  };
+
+  const [expandedItems, setExpandedItems] = useState<string[]>(getExpandedItemsFromRoute);
+
+  // Atualiza os itens expandidos quando a rota muda
+  useState(() => {
+    const activeParents = getExpandedItemsFromRoute();
+    activeParents.forEach((parent) => {
+      if (!expandedItems.includes(parent)) {
+        setExpandedItems((prev) => [...prev, parent]);
+      }
+    });
+  });
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) =>
@@ -153,7 +180,12 @@ export function AppSidebar() {
                           <NavLink
                             key={child.url}
                             to={child.url}
-                            onClick={() => setIsOpen(false)}
+                            onClick={() => {
+                              // Apenas fecha o sidebar mobile, não afeta o submenu expandido
+                              if (window.innerWidth < 1024) {
+                                setIsOpen(false);
+                              }
+                            }}
                             className={cn(
                               "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
                               isActive(child.url)
@@ -171,7 +203,12 @@ export function AppSidebar() {
                 ) : (
                   <NavLink
                     to={item.url}
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => {
+                      // Apenas fecha o sidebar mobile
+                      if (window.innerWidth < 1024) {
+                        setIsOpen(false);
+                      }
+                    }}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive(item.url)

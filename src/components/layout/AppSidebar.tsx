@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import logoMeepRh from "@/assets/logo-meep-rh.png";
 
 interface NavItem {
   title: string;
@@ -138,14 +139,12 @@ export function AppSidebar() {
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent">
-              <UserCog className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white">Meep RH</h1>
-              <p className="text-xs text-sidebar-foreground/60">Sistema de Gestão</p>
-            </div>
+          <div className="flex h-16 items-center justify-center border-b border-sidebar-border px-4">
+            <img 
+              src={logoMeepRh} 
+              alt="Meep RH" 
+              className="h-10 w-auto object-contain"
+            />
           </div>
 
           {/* Navigation */}

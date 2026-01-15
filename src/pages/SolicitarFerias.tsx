@@ -13,11 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Umbrella, Sun, Send, CheckCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Send, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import logoMeepRh from "@/assets/logo-meep-rh.png";
 
 export default function SolicitarFerias() {
   const [nome, setNome] = useState("");
@@ -50,14 +51,15 @@ export default function SolicitarFerias() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full border-border/50 shadow-2xl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+        <Card className="max-w-md w-full border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl relative z-10">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-success/20 mb-6">
-              <CheckCircle className="h-10 w-10 text-success" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 mb-6 ring-4 ring-emerald-500/30">
+              <CheckCircle className="h-10 w-10 text-emerald-400" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Solicitação Enviada!</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-2xl font-bold mb-2 text-white">Solicitação Enviada!</h2>
+            <p className="text-white/60">
               Sua solicitação de férias foi enviada com sucesso. Você receberá uma notificação quando ela for analisada.
             </p>
             <Button 
@@ -83,75 +85,79 @@ export default function SolicitarFerias() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+      
+      <div className="max-w-2xl w-full space-y-8 relative z-10">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="relative inline-flex">
-            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-chart-1 to-blue-500 shadow-xl">
-              <Umbrella className="h-10 w-10 text-white" />
-            </div>
-            <div className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 shadow-lg">
-              <Sun className="h-4 w-4 text-white" />
-            </div>
+        <div className="text-center space-y-6">
+          <div className="flex justify-center">
+            <img 
+              src={logoMeepRh} 
+              alt="Meep RH" 
+              className="h-20 w-auto object-contain drop-shadow-2xl"
+            />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl text-white">
               Solicitação de Férias
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-white/60 mt-2">
               Preencha o formulário abaixo para solicitar suas férias
             </p>
           </div>
         </div>
 
         {/* Form */}
-        <Card className="border-border/50 shadow-2xl overflow-hidden">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-transparent">
-            <CardTitle>Dados da Solicitação</CardTitle>
-            <CardDescription>Todos os campos marcados com * são obrigatórios</CardDescription>
+        <Card className="border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <CardHeader className="border-b border-white/10 bg-gradient-to-r from-primary/20 to-accent/10">
+            <CardTitle className="text-white">Dados da Solicitação</CardTitle>
+            <CardDescription className="text-white/60">Todos os campos marcados com * são obrigatórios</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="grid gap-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="nome">Nome Completo *</Label>
+                  <Label htmlFor="nome" className="text-white/80">Nome Completo *</Label>
                   <Input
                     id="nome"
                     placeholder="Seu nome completo"
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
-                    className="bg-background/50 border-border/50"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-primary/50 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-mail *</Label>
+                  <Label htmlFor="email" className="text-white/80">E-mail *</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="seu.email@empresa.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="bg-background/50 border-border/50"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-primary/50 focus:ring-primary/20"
                   />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="setor">Setor *</Label>
+                  <Label htmlFor="setor" className="text-white/80">Setor *</Label>
                   <Input
                     id="setor"
                     placeholder="Seu setor/departamento"
                     value={setor}
                     onChange={(e) => setSetor(e.target.value)}
-                    className="bg-background/50 border-border/50"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-primary/50 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Tipo de Férias *</Label>
+                  <Label className="text-white/80">Tipo de Férias *</Label>
                   <Select value={tipoFerias} onValueChange={setTipoFerias}>
-                    <SelectTrigger className="bg-background/50 border-border/50">
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white focus:border-primary/50 focus:ring-primary/20">
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -165,14 +171,14 @@ export default function SolicitarFerias() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Data de Início *</Label>
+                  <Label className="text-white/80">Data de Início *</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal bg-background/50 border-border/50",
-                          !dataInicio && "text-muted-foreground"
+                          "w-full justify-start text-left font-normal bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white",
+                          !dataInicio && "text-white/40"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -190,14 +196,14 @@ export default function SolicitarFerias() {
                   </Popover>
                 </div>
                 <div className="space-y-2">
-                  <Label>Data de Término *</Label>
+                  <Label className="text-white/80">Data de Término *</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal bg-background/50 border-border/50",
-                          !dataFim && "text-muted-foreground"
+                          "w-full justify-start text-left font-normal bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white",
+                          !dataFim && "text-white/40"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -217,21 +223,21 @@ export default function SolicitarFerias() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="observacoes">Observações</Label>
+                <Label htmlFor="observacoes" className="text-white/80">Observações</Label>
                 <Textarea
                   id="observacoes"
                   placeholder="Informações adicionais (opcional)"
                   rows={3}
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
-                  className="bg-background/50 border-border/50"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-primary/50 focus:ring-primary/20"
                 />
               </div>
 
               <Button 
                 type="submit" 
                 variant="gradient" 
-                className="w-full gap-2 shadow-lg hover:shadow-xl transition-all"
+                className="w-full gap-2 shadow-lg hover:shadow-xl transition-all h-12 text-base font-medium"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -250,7 +256,7 @@ export default function SolicitarFerias() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-white/40">
           Após o envio, sua solicitação será analisada pelo RH.
         </p>
       </div>

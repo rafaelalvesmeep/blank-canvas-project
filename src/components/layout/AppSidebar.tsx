@@ -139,11 +139,11 @@ export function AppSidebar() {
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-center border-b border-sidebar-border px-4">
+          <div className="flex h-20 items-center justify-center border-b border-sidebar-border px-4">
             <img 
               src={logoMeepRh} 
               alt="Meep RH" 
-              className="h-10 w-auto object-contain"
+              className="h-14 w-auto object-contain"
             />
           </div>
 

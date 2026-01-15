@@ -26,26 +26,11 @@ import {
   Cell,
 } from "recharts";
 
-const headcountData = [
-  { month: "Jan", colaboradores: 120 },
-  { month: "Fev", colaboradores: 125 },
-  { month: "Mar", colaboradores: 128 },
-  { month: "Abr", colaboradores: 132 },
-  { month: "Mai", colaboradores: 138 },
-  { month: "Jun", colaboradores: 145 },
-];
+const headcountData: { month: string; colaboradores: number }[] = [];
 
-const genderData = [
-  { name: "Masculino", value: 85, color: "hsl(220, 70%, 50%)" },
-  { name: "Feminino", value: 60, color: "hsl(280, 65%, 60%)" },
-];
+const genderData: { name: string; value: number; color: string }[] = [];
 
-const openVacancies = [
-  { id: 1, cargo: "Desenvolvedor Full Stack", setor: "TI", dias: 7, prioridade: "alta" },
-  { id: 2, cargo: "Analista de RH", setor: "RH", dias: 3, prioridade: "media" },
-  { id: 3, cargo: "Designer UX/UI", setor: "Design", dias: 12, prioridade: "alta" },
-  { id: 4, cargo: "Assistente Administrativo", setor: "Administrativo", dias: 5, prioridade: "baixa" },
-];
+const openVacancies: { id: number; cargo: string; setor: string; dias: number; prioridade: string }[] = [];
 
 export default function Dashboard() {
   return (
@@ -70,28 +55,25 @@ export default function Dashboard() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard
             title="Total de Colaboradores"
-            value={145}
+            value={0}
             subtitle="Ativos no sistema"
             icon={Users}
-            trend={{ value: 5.2, isPositive: true }}
           />
           <KPICard
             title="Admissões"
-            value={8}
+            value={0}
             subtitle="Este mês"
             icon={UserPlus}
-            trend={{ value: 12, isPositive: true }}
           />
           <KPICard
             title="Desligamentos"
-            value={2}
+            value={0}
             subtitle="Este mês"
             icon={UserMinus}
-            trend={{ value: -15, isPositive: true }}
           />
           <KPICard
             title="Vagas Abertas"
-            value={12}
+            value={0}
             subtitle="Em recrutamento"
             icon={Briefcase}
           />
@@ -195,41 +177,48 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {openVacancies.map((vaga) => (
-                <div
-                  key={vaga.id}
-                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <Briefcase className="h-5 w-5 text-primary" />
+            {openVacancies.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground">Nenhuma vaga em aberto</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {openVacancies.map((vaga) => (
+                  <div
+                    key={vaga.id}
+                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Briefcase className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{vaga.cargo}</p>
+                        <p className="text-sm text-muted-foreground">{vaga.setor}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{vaga.cargo}</p>
-                      <p className="text-sm text-muted-foreground">{vaga.setor}</p>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-sm">{vaga.dias} dias</span>
+                      </div>
+                      <Badge
+                        variant={
+                          vaga.prioridade === "alta"
+                            ? "destructive"
+                            : vaga.prioridade === "media"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {vaga.prioridade}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-sm">{vaga.dias} dias</span>
-                    </div>
-                    <Badge
-                      variant={
-                        vaga.prioridade === "alta"
-                          ? "destructive"
-                          : vaga.prioridade === "media"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {vaga.prioridade}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -239,7 +228,7 @@ export default function Dashboard() {
             <CardContent className="flex items-center gap-4 p-6">
               <CheckCircle2 className="h-8 w-8 text-primary" />
               <div>
-                <p className="text-2xl font-bold">23</p>
+                <p className="text-2xl font-bold">0</p>
                 <p className="text-sm text-muted-foreground">Vagas Fechadas (mês)</p>
               </div>
             </CardContent>
@@ -248,7 +237,7 @@ export default function Dashboard() {
             <CardContent className="flex items-center gap-4 p-6">
               <Clock className="h-8 w-8 text-chart-2" />
               <div>
-                <p className="text-2xl font-bold">15 dias</p>
+                <p className="text-2xl font-bold">— dias</p>
                 <p className="text-sm text-muted-foreground">Tempo médio fechamento</p>
               </div>
             </CardContent>
@@ -257,7 +246,7 @@ export default function Dashboard() {
             <CardContent className="flex items-center gap-4 p-6">
               <Users className="h-8 w-8 text-chart-4" />
               <div>
-                <p className="text-2xl font-bold">12</p>
+                <p className="text-2xl font-bold">0</p>
                 <p className="text-sm text-muted-foreground">Férias pendentes</p>
               </div>
             </CardContent>
@@ -266,7 +255,7 @@ export default function Dashboard() {
             <CardContent className="flex items-center gap-4 p-6">
               <TrendingUp className="h-8 w-8 text-chart-3" />
               <div>
-                <p className="text-2xl font-bold">8</p>
+                <p className="text-2xl font-bold">0</p>
                 <p className="text-sm text-muted-foreground">Avaliações este mês</p>
               </div>
             </CardContent>

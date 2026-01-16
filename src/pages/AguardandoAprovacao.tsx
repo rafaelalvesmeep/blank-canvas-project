@@ -1,16 +1,27 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, LogOut } from "lucide-react";
+import { Clock, LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AguardandoAprovacao() {
-  const { signOut, profile } = useAuth();
+  const { signOut, profile, isApproved, refreshProfile } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isApproved) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isApproved, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/login");
+  };
+
+  const handleRefresh = async () => {
+    await refreshProfile();
   };
 
   return (
@@ -42,19 +53,29 @@ export default function AguardandoAprovacao() {
                 Olá, <span className="font-medium text-foreground">{profile?.full_name || profile?.email}</span>!
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                Um administrador precisa aprovar seu acesso ao sistema. 
-                Você receberá acesso assim que sua conta for aprovada.
+                Um administrador precisa aprovar seu acesso ao sistema.
               </p>
             </div>
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleRefresh}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Verificar
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

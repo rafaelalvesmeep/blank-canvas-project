@@ -13,9 +13,10 @@ export function ProtectedRoute({
   requireApproval = true,
   requireAdmin = false,
 }: ProtectedRouteProps) {
-  const { user, isLoading, isApproved, isAdmin } = useAuth();
+  const { user, isLoading, isApproved, isAdmin, profile } = useAuth();
 
-  if (isLoading) {
+  // While auth OR profile is still being resolved, keep a loader to avoid redirect flicker.
+  if (isLoading || (user && requireApproval && profile === null)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

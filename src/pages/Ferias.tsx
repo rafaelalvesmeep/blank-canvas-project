@@ -228,16 +228,9 @@ export default function Ferias() {
                         </TableCell>
                         <TableCell>
                           {ferias.notes ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
-                                  <FileText className="h-3.5 w-3.5" />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p className="text-xs">{ferias.notes}</p>
-                              </TooltipContent>
-                            </Tooltip>
+                            <span className="text-sm text-muted-foreground">
+                              {ferias.notes}
+                            </span>
                           ) : (
                             <span className="text-sm text-muted-foreground">—</span>
                           )}

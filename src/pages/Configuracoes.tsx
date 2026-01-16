@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -16,6 +17,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -26,10 +28,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Users, UserCheck, Check, X, Edit2 } from "lucide-react";
+import { Users, UserCheck, Check, X, Edit2, Search, Shield, Building2, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 type AppRole = "admin" | "rh" | "gestor";
 type AppSector = "comercial" | "compliance" | "cs_meep" | "cs_mee" | "desenvolvimento" | "marketing" | "suporte";
@@ -55,10 +70,10 @@ const SECTORS: { value: AppSector; label: string }[] = [
   { value: "suporte", label: "Suporte" },
 ];
 
-const ROLES: { value: AppRole; label: string }[] = [
-  { value: "admin", label: "Admin" },
-  { value: "rh", label: "RH" },
-  { value: "gestor", label: "Gestor" },
+const ROLES: { value: AppRole; label: string; description: string }[] = [
+  { value: "admin", label: "Admin", description: "Acesso total ao sistema" },
+  { value: "rh", label: "RH", description: "Gestão de pessoas e vagas" },
+  { value: "gestor", label: "Gestor", description: "Gestão do setor atribuído" },
 ];
 
 export default function Configuracoes() {
@@ -66,13 +81,13 @@ export default function Configuracoes() {
   const [editRole, setEditRole] = useState<AppRole | "">("");
   const [editSector, setEditSector] = useState<AppSector | "">("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<AppRole | "all">("all");
   const queryClient = useQueryClient();
 
-  // Fetch all profiles with their roles
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users-with-roles"],
     queryFn: async () => {
-      // Fetch profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("*")
@@ -80,14 +95,12 @@ export default function Configuracoes() {
 
       if (profilesError) throw profilesError;
 
-      // Fetch roles
       const { data: roles, error: rolesError } = await supabase
         .from("user_roles")
         .select("*");
 
       if (rolesError) throw rolesError;
 
-      // Combine profiles with roles
       const usersWithRoles: ProfileWithRole[] = (profiles || []).map((profile) => {
         const userRole = roles?.find((r) => r.user_id === profile.user_id);
         return {
@@ -103,7 +116,24 @@ export default function Configuracoes() {
   const pendingUsers = users.filter((u) => !u.is_approved);
   const approvedUsers = users.filter((u) => u.is_approved);
 
-  // Approve user mutation
+  // Filter approved users
+  const filteredUsers = approvedUsers.filter((user) => {
+    const matchesSearch =
+      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  // Stats
+  const stats = {
+    total: approvedUsers.length,
+    admins: approvedUsers.filter((u) => u.role === "admin").length,
+    rh: approvedUsers.filter((u) => u.role === "rh").length,
+    gestores: approvedUsers.filter((u) => u.role === "gestor").length,
+    pending: pendingUsers.length,
+  };
+
   const approveMutation = useMutation({
     mutationFn: async (userId: string) => {
       const { error } = await supabase
@@ -122,10 +152,8 @@ export default function Configuracoes() {
     },
   });
 
-  // Reject user mutation
   const rejectMutation = useMutation({
     mutationFn: async (userId: string) => {
-      // Delete the user profile (this will cascade to user_roles)
       const { error } = await supabase
         .from("profiles")
         .delete()
@@ -135,17 +163,15 @@ export default function Configuracoes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
-      toast.success("Usuário rejeitado");
+      toast.success("Solicitação rejeitada");
     },
     onError: () => {
       toast.error("Erro ao rejeitar usuário");
     },
   });
 
-  // Update role mutation
   const updateRoleMutation = useMutation({
     mutationFn: async ({ userId, role, sector }: { userId: string; role: AppRole; sector: AppSector | null }) => {
-      // First, check if user already has a role
       const { data: existingRole } = await supabase
         .from("user_roles")
         .select("*")
@@ -153,7 +179,6 @@ export default function Configuracoes() {
         .single();
 
       if (existingRole) {
-        // Update existing role
         const { error } = await supabase
           .from("user_roles")
           .update({ role })
@@ -161,7 +186,6 @@ export default function Configuracoes() {
 
         if (error) throw error;
       } else {
-        // Insert new role
         const { error } = await supabase
           .from("user_roles")
           .insert({ user_id: userId, role });
@@ -169,7 +193,6 @@ export default function Configuracoes() {
         if (error) throw error;
       }
 
-      // Update sector in profile
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ sector: role === "gestor" ? sector : null })
@@ -179,7 +202,7 @@ export default function Configuracoes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
-      toast.success("Permissões atualizadas com sucesso!");
+      toast.success("Permissões atualizadas!");
       setDialogOpen(false);
       setSelectedUser(null);
     },
@@ -206,15 +229,19 @@ export default function Configuracoes() {
   };
 
   const getRoleBadge = (role: AppRole | null) => {
-    if (!role) return <Badge variant="outline">Sem role</Badge>;
+    if (!role) return <Badge variant="outline" className="text-xs">Sem permissão</Badge>;
 
-    const variants: Record<AppRole, "default" | "secondary" | "destructive"> = {
-      admin: "destructive",
-      rh: "default",
-      gestor: "secondary",
+    const config: Record<AppRole, { variant: "default" | "secondary" | "destructive"; className: string }> = {
+      admin: { variant: "destructive", className: "bg-red-100 text-red-700 hover:bg-red-100" },
+      rh: { variant: "default", className: "bg-primary/10 text-primary hover:bg-primary/10" },
+      gestor: { variant: "secondary", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" },
     };
 
-    return <Badge variant={variants[role]}>{role.toUpperCase()}</Badge>;
+    return (
+      <Badge variant={config[role].variant} className={config[role].className}>
+        {role.toUpperCase()}
+      </Badge>
+    );
   };
 
   const getSectorLabel = (sector: AppSector | null) => {
@@ -222,70 +249,175 @@ export default function Configuracoes() {
     return SECTORS.find((s) => s.value === sector)?.label || sector;
   };
 
+  const formatDate = (date: string) => {
+    return format(new Date(date), "dd MMM yyyy", { locale: ptBR });
+  };
+
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="p-6 space-y-6">
+        {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold">Configurações</h1>
-          <p className="text-muted-foreground">
-            Gerencie usuários e aprovações do sistema
+          <p className="text-sm text-muted-foreground">
+            Gerencie usuários, permissões e aprovações do sistema
           </p>
         </div>
 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-muted">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{stats.total}</p>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-red-100">
+                  <Shield className="h-4 w-4 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{stats.admins}</p>
+                  <p className="text-xs text-muted-foreground">Admins</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{stats.rh}</p>
+                  <p className="text-xs text-muted-foreground">RH</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-amber-100">
+                  <Building2 className="h-4 w-4 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{stats.gestores}</p>
+                  <p className="text-xs text-muted-foreground">Gestores</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-orange-100">
+                  <UserCheck className="h-4 w-4 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{stats.pending}</p>
+                  <p className="text-xs text-muted-foreground">Pendentes</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs */}
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Usuários ({approvedUsers.length})
+          <TabsList className="bg-muted/50">
+            <TabsTrigger value="users" className="data-[state=active]:bg-background">
+              Usuários
             </TabsTrigger>
-            <TabsTrigger value="approvals" className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4" />
+            <TabsTrigger value="approvals" className="data-[state=active]:bg-background">
               Aprovações
               {pendingUsers.length > 0 && (
-                <Badge variant="destructive" className="ml-1">
+                <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
                   {pendingUsers.length}
                 </Badge>
               )}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users">
+          <TabsContent value="users" className="space-y-4">
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome ou e-mail..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as AppRole | "all")}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Filtrar por role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as roles</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="rh">RH</SelectItem>
+                  <SelectItem value="gestor">Gestor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Users Table */}
             <Card>
-              <CardHeader>
-                <CardTitle>Usuários Ativos</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {isLoading ? (
-                  <p className="text-muted-foreground">Carregando...</p>
-                ) : approvedUsers.length === 0 ? (
-                  <p className="text-muted-foreground">Nenhum usuário ativo</p>
+                  <div className="p-8 text-center text-muted-foreground">Carregando...</div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    {searchTerm || roleFilter !== "all"
+                      ? "Nenhum usuário encontrado com os filtros aplicados"
+                      : "Nenhum usuário ativo"}
+                  </div>
                 ) : (
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>E-mail</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Setor</TableHead>
-                        <TableHead className="w-[100px]">Ações</TableHead>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="font-medium">Usuário</TableHead>
+                        <TableHead className="font-medium">Role</TableHead>
+                        <TableHead className="font-medium">Setor</TableHead>
+                        <TableHead className="font-medium">Desde</TableHead>
+                        <TableHead className="w-[80px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {approvedUsers.map((user) => (
+                      {filteredUsers.map((user) => (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">
-                            {user.full_name || "—"}
-                          </TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>{getRoleBadge(user.role)}</TableCell>
                           <TableCell>
+                            <div>
+                              <p className="font-medium">{user.full_name || "—"}</p>
+                              <p className="text-xs text-muted-foreground">{user.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{getRoleBadge(user.role)}</TableCell>
+                          <TableCell className="text-sm">
                             {user.role === "gestor" ? getSectorLabel(user.sector) : "—"}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {formatDate(user.created_at)}
                           </TableCell>
                           <TableCell>
                             <Button
                               variant="ghost"
-                              size="icon"
+                              size="sm"
                               onClick={() => openEditDialog(user)}
+                              className="h-8 w-8 p-0"
                             >
                               <Edit2 className="h-4 w-4" />
                             </Button>
@@ -299,64 +431,89 @@ export default function Configuracoes() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="approvals">
+          <TabsContent value="approvals" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Aprovações Pendentes</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-medium">Solicitações de Acesso</CardTitle>
+                <CardDescription>
+                  Usuários aguardando aprovação para acessar o sistema
+                </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {isLoading ? (
-                  <p className="text-muted-foreground">Carregando...</p>
+                  <div className="p-8 text-center text-muted-foreground">Carregando...</div>
                 ) : pendingUsers.length === 0 ? (
-                  <p className="text-muted-foreground">
-                    Nenhuma aprovação pendente
-                  </p>
+                  <div className="p-8 text-center">
+                    <UserCheck className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
+                    <p className="text-muted-foreground">Nenhuma solicitação pendente</p>
+                  </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>E-mail</TableHead>
-                        <TableHead>Data de Cadastro</TableHead>
-                        <TableHead className="w-[150px]">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">
-                            {user.full_name || "—"}
-                          </TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>
-                            {new Date(user.created_at).toLocaleDateString("pt-BR")}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                onClick={() => approveMutation.mutate(user.user_id)}
-                                disabled={approveMutation.isPending}
-                              >
-                                <Check className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => rejectMutation.mutate(user.user_id)}
-                                disabled={rejectMutation.isPending}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
+                  <div className="divide-y">
+                    {pendingUsers.map((user) => (
+                      <div key={user.id} className="p-4 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {(user.full_name || user.email).charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">{user.full_name || "—"}</p>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              <span className="truncate">{user.email}</span>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs text-muted-foreground hidden sm:block">
+                            {formatDate(user.created_at)}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => approveMutation.mutate(user.user_id)}
+                              disabled={approveMutation.isPending}
+                              className="h-8"
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Aprovar
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-destructive hover:text-destructive"
+                                  disabled={rejectMutation.isPending}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Rejeitar solicitação?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta ação irá remover a solicitação de {user.full_name || user.email}. 
+                                    O usuário precisará criar uma nova conta.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => rejectMutation.mutate(user.user_id)}
+                                    className="bg-destructive hover:bg-destructive/90"
+                                  >
+                                    Rejeitar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -366,32 +523,43 @@ export default function Configuracoes() {
 
       {/* Edit Role Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Editar Permissões</DialogTitle>
+            <DialogDescription>
+              Configure o nível de acesso do usuário
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Usuário</Label>
-              <p className="text-sm text-muted-foreground">
-                {selectedUser?.full_name || selectedUser?.email}
-              </p>
+          <div className="space-y-4 py-2">
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <p className="font-medium">{selectedUser?.full_name}</p>
+              <p className="text-sm text-muted-foreground">{selectedUser?.email}</p>
             </div>
 
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select value={editRole} onValueChange={(v) => setEditRole(v as AppRole)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ROLES.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="grid gap-2">
+                {ROLES.map((role) => (
+                  <button
+                    key={role.value}
+                    type="button"
+                    onClick={() => setEditRole(role.value)}
+                    className={`p-3 rounded-lg border text-left transition-colors ${
+                      editRole === role.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{role.label}</span>
+                      {editRole === role.value && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{role.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {editRole === "gestor" && (
@@ -399,7 +567,7 @@ export default function Configuracoes() {
                 <Label>Setor</Label>
                 <Select value={editSector} onValueChange={(v) => setEditSector(v as AppSector)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione um setor" />
+                    <SelectValue placeholder="Selecione o setor" />
                   </SelectTrigger>
                   <SelectContent>
                     {SECTORS.map((sector) => (
@@ -412,7 +580,7 @@ export default function Configuracoes() {
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancelar
               </Button>
@@ -420,7 +588,7 @@ export default function Configuracoes() {
                 onClick={handleSaveRole}
                 disabled={!editRole || (editRole === "gestor" && !editSector) || updateRoleMutation.isPending}
               >
-                Salvar
+                Salvar alterações
               </Button>
             </div>
           </div>

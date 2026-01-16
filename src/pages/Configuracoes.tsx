@@ -55,7 +55,7 @@ interface ProfileWithRole {
   email: string;
   full_name: string | null;
   is_approved: boolean;
-  sector: AppSector | null;
+  sector: AppSector[] | null;
   created_at: string;
   role: AppRole | null;
 }
@@ -79,7 +79,7 @@ const ROLES: { value: AppRole; label: string; description: string }[] = [
 export default function Configuracoes() {
   const [selectedUser, setSelectedUser] = useState<ProfileWithRole | null>(null);
   const [editRole, setEditRole] = useState<AppRole | "">("");
-  const [editSector, setEditSector] = useState<AppSector | "">("");
+  const [editSectors, setEditSectors] = useState<AppSector[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<AppRole | "all">("all");
@@ -171,7 +171,7 @@ export default function Configuracoes() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, role, sector }: { userId: string; role: AppRole; sector: AppSector | null }) => {
+    mutationFn: async ({ userId, role, sectors }: { userId: string; role: AppRole; sectors: AppSector[] }) => {
       const { data: existingRole } = await supabase
         .from("user_roles")
         .select("*")
@@ -195,7 +195,7 @@ export default function Configuracoes() {
 
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({ sector: role === "gestor" ? sector : null })
+        .update({ sector: role === "gestor" && sectors.length > 0 ? sectors : null })
         .eq("user_id", userId);
 
       if (profileError) throw profileError;
@@ -214,7 +214,7 @@ export default function Configuracoes() {
   const openEditDialog = (user: ProfileWithRole) => {
     setSelectedUser(user);
     setEditRole(user.role || "");
-    setEditSector(user.sector || "");
+    setEditSectors(user.sector || []);
     setDialogOpen(true);
   };
 
@@ -224,8 +224,16 @@ export default function Configuracoes() {
     updateRoleMutation.mutate({
       userId: selectedUser.user_id,
       role: editRole as AppRole,
-      sector: editRole === "gestor" ? (editSector as AppSector) : null,
+      sectors: editRole === "gestor" ? editSectors : [],
     });
+  };
+
+  const toggleSector = (sector: AppSector) => {
+    setEditSectors((prev) =>
+      prev.includes(sector)
+        ? prev.filter((s) => s !== sector)
+        : [...prev, sector]
+    );
   };
 
   const getRoleBadge = (role: AppRole | null) => {
@@ -244,9 +252,11 @@ export default function Configuracoes() {
     );
   };
 
-  const getSectorLabel = (sector: AppSector | null) => {
-    if (!sector) return "—";
-    return SECTORS.find((s) => s.value === sector)?.label || sector;
+  const getSectorLabels = (sectors: AppSector[] | null) => {
+    if (!sectors || sectors.length === 0) return "—";
+    return sectors
+      .map((s) => SECTORS.find((sec) => sec.value === s)?.label || s)
+      .join(", ");
   };
 
   const formatDate = (date: string) => {
@@ -407,7 +417,7 @@ export default function Configuracoes() {
                           </TableCell>
                           <TableCell>{getRoleBadge(user.role)}</TableCell>
                           <TableCell className="text-sm">
-                            {user.role === "gestor" ? getSectorLabel(user.sector) : "—"}
+                            {user.role === "gestor" ? getSectorLabels(user.sector) : "—"}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {formatDate(user.created_at)}
@@ -564,19 +574,37 @@ export default function Configuracoes() {
 
             {editRole === "gestor" && (
               <div className="space-y-2">
-                <Label>Setor</Label>
-                <Select value={editSector} onValueChange={(v) => setEditSector(v as AppSector)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o setor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SECTORS.map((sector) => (
-                      <SelectItem key={sector.value} value={sector.value}>
+                <Label>Setores</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Selecione um ou mais setores que este gestor administra
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {SECTORS.map((sector) => (
+                    <button
+                      key={sector.value}
+                      type="button"
+                      onClick={() => toggleSector(sector.value)}
+                      className={`p-2 rounded-lg border text-left text-sm transition-colors ${
+                        editSectors.includes(sector.value)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`h-4 w-4 rounded border flex items-center justify-center ${
+                          editSectors.includes(sector.value)
+                            ? "bg-primary border-primary"
+                            : "border-muted-foreground/30"
+                        }`}>
+                          {editSectors.includes(sector.value) && (
+                            <Check className="h-3 w-3 text-primary-foreground" />
+                          )}
+                        </div>
                         {sector.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -586,7 +614,7 @@ export default function Configuracoes() {
               </Button>
               <Button
                 onClick={handleSaveRole}
-                disabled={!editRole || (editRole === "gestor" && !editSector) || updateRoleMutation.isPending}
+                disabled={!editRole || (editRole === "gestor" && editSectors.length === 0) || updateRoleMutation.isPending}
               >
                 Salvar alterações
               </Button>

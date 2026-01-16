@@ -11,7 +11,7 @@ interface Profile {
   email: string;
   full_name: string | null;
   is_approved: boolean;
-  sector: AppSector | null;
+  sector: AppSector[] | null;
   created_at: string;
   updated_at: string;
 }

@@ -9,6 +9,10 @@ import {
   Umbrella,
   Sun,
   Loader2,
+  User,
+  Building2,
+  Mail,
+  FileText,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/integrations/supabase/safeClient";
@@ -22,6 +26,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Ferias() {
   const { data: feriasAprovadas = [], isLoading } = useQuery({
@@ -74,6 +83,14 @@ export default function Ferias() {
   const formatDate = (dateStr: string) => {
     try {
       return format(parseISO(dateStr), "dd/MM/yyyy", { locale: ptBR });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatDateTime = (dateStr: string) => {
+    try {
+      return format(parseISO(dateStr), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
     } catch {
       return dateStr;
     }
@@ -185,7 +202,9 @@ export default function Ferias() {
                       <TableHead>Setor</TableHead>
                       <TableHead>Período</TableHead>
                       <TableHead className="text-center">Dias</TableHead>
-                      <TableHead>Aprovado em</TableHead>
+                      <TableHead>Aprovado por</TableHead>
+                      <TableHead>Data Aprovação</TableHead>
+                      <TableHead>Observações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -200,16 +219,20 @@ export default function Ferias() {
                             </Avatar>
                             <div>
                               <p className="font-medium">{ferias.employee_name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {ferias.employee_email}
-                              </p>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Mail className="h-3 w-3" />
+                                <span>{ferias.employee_email}</span>
+                              </div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-muted/50">
-                            {ferias.department}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                            <Badge variant="outline" className="bg-muted/50">
+                              {ferias.department}
+                            </Badge>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 text-sm">
@@ -225,9 +248,40 @@ export default function Ferias() {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          {(ferias as { approved_by?: string }).approved_by ? (
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-success" />
+                              <span className="text-sm font-medium">
+                                {(ferias as { approved_by?: string }).approved_by}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {formatDate(ferias.updated_at.split("T")[0])}
+                            {formatDateTime(ferias.updated_at)}
                           </span>
+                        </TableCell>
+                        <TableCell>
+                          {ferias.notes ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1 cursor-pointer">
+                                  <FileText className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm text-muted-foreground truncate max-w-[100px]">
+                                    {ferias.notes}
+                                  </span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>{ferias.notes}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

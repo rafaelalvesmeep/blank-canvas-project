@@ -67,18 +67,30 @@ export async function meepLogin(username: string, password: string): Promise<Mee
       body: JSON.stringify({ username, password }),
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
+      const errorText = await response.text();
+      // API returns error message directly as string or as JSON
+      let errorMessage = 'Credenciais inválidas';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData || errorMessage;
+      } catch {
+        // If not JSON, use the text directly
+        if (errorText && typeof errorText === 'string') {
+          errorMessage = errorText;
+        }
+      }
       return {
         success: false,
-        message: data.message || 'Credenciais inválidas',
+        message: errorMessage,
       };
     }
 
+    const data = await response.json();
+
     return {
-      success: true,
-      message: 'Código MFA enviado para seu email',
+      success: data.RequiredMFA === true,
+      message: data.RequiredMFA ? 'Código MFA enviado para seu email' : 'Erro inesperado',
     };
   } catch (error) {
     console.error('Erro ao fazer login Meep:', error);
@@ -99,26 +111,55 @@ export async function meepValidate(username: string, code: string): Promise<Meep
       body: JSON.stringify({ username, code }),
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
+      const errorText = await response.text();
+      // API returns error message directly as string or as JSON
+      let errorMessage = 'Código inválido';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData || errorMessage;
+      } catch {
+        // If not JSON, use the text directly
+        if (errorText && typeof errorText === 'string') {
+          errorMessage = errorText;
+        }
+      }
       return {
         success: false,
-        message: data.message || 'Código inválido',
+        message: errorMessage,
       };
     }
 
-    if (data.token) {
-      MeepAuthManager.setToken(data.token);
+    const data = await response.json();
+
+    // Parse token from access_token field
+    const token = data.access_token;
+    
+    if (token) {
+      MeepAuthManager.setToken(token);
+      
+      // Parse user data from string fields if present
+      let userData: MeepUserData | undefined;
       if (data.user) {
-        MeepAuthManager.setUserData(data.user);
+        try {
+          const parsedUser = typeof data.user === 'string' ? JSON.parse(data.user) : data.user;
+          userData = {
+            id: parsedUser.id || parsedUser.userId,
+            email: parsedUser.email,
+            name: parsedUser.name,
+          };
+          MeepAuthManager.setUserData(userData);
+        } catch {
+          console.warn('Could not parse user data');
+        }
       }
     }
 
     return {
-      success: true,
-      token: data.token,
-      user: data.user,
+      success: !!token,
+      token,
+      user: MeepAuthManager.getUserData() || undefined,
+      message: token ? undefined : 'Token não recebido',
     };
   } catch (error) {
     console.error('Erro ao validar código MFA:', error);

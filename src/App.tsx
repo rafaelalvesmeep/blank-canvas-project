@@ -8,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import LoginMeep from "./pages/LoginMeep";
+import SignupMeep from "./pages/SignupMeep";
 import AguardandoAprovacao from "./pages/AguardandoAprovacao";
 import Dashboard from "./pages/Dashboard";
 import Colaboradores from "./pages/Colaboradores";
@@ -35,6 +37,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/login-meep" element={<LoginMeep />} />
+            <Route path="/signup-meep" element={<SignupMeep />} />
             <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
             <Route
               path="/dashboard"

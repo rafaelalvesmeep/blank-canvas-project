@@ -2,3 +2,9 @@ project_id = "sbasetmesbveocyeauua"
 
 [functions.webhook-vacation-request]
 verify_jwt = false
+
+[functions.meep-supabase-auth]
+verify_jwt = false
+
+[functions.meep-complete-registration]
+verify_jwt = false

@@ -147,6 +147,25 @@ export default function Login() {
                       "Entrar"
                     )}
                   </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-white/10" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">ou</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => navigate("/login-meep")}
+                  >
+                    Entrar com conta Meep (MFA)
+                  </Button>
                 </form>
               </TabsContent>
 

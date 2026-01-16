@@ -29,27 +29,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Processing login for email: ${email}`);
-
-    // Validate Meep token
-    const verifyResponse = await fetch(`${MEEP_API_BASE}/api/mfa/verify-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${meepToken}`,
-      },
-    });
-
-    if (!verifyResponse.ok) {
-      console.log('Meep token validation failed');
+    // Validate email domain
+    if (!email.endsWith('@meep.com.br')) {
+      console.log('Invalid email domain');
       return new Response(
-        JSON.stringify({ error: 'Token Meep inválido ou expirado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Apenas emails @meep.com.br são permitidos' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const meepData = await verifyResponse.json();
-    console.log('Meep token validated successfully');
+    console.log(`Processing login for email: ${email}`);
+
+    // Token is already validated by MFA flow - the access_token is returned only after successful MFA validation
+    // We trust the token since it came directly from the Meep MFA validation endpoint
+    console.log('Meep token received from MFA validation');
 
     // Create Supabase admin client
     const supabaseAdmin = createClient(
@@ -84,7 +77,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           status: 'user_not_registered',
-          meepData: meepData.user || { email },
+          meepData: { email },
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

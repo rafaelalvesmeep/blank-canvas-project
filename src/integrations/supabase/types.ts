@@ -21,7 +21,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_approved: boolean
-          sector: Database["public"]["Enums"]["app_sector"] | null
+          sector: Database["public"]["Enums"]["app_sector"][] | null
           updated_at: string
           user_id: string
         }
@@ -31,7 +31,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_approved?: boolean
-          sector?: Database["public"]["Enums"]["app_sector"] | null
+          sector?: Database["public"]["Enums"]["app_sector"][] | null
           updated_at?: string
           user_id: string
         }
@@ -41,7 +41,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_approved?: boolean
-          sector?: Database["public"]["Enums"]["app_sector"] | null
+          sector?: Database["public"]["Enums"]["app_sector"][] | null
           updated_at?: string
           user_id?: string
         }

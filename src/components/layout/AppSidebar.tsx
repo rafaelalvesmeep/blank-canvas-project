@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
   Briefcase,
   Calendar,
-  ClipboardCheck,
   Settings,
   ChevronDown,
   Menu,
@@ -23,53 +22,57 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import logoMeepRh from "@/assets/logo-meep-rh.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   children?: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }[];
+  adminOnly?: boolean;
 }
-
-// TODO: Replace with actual user role from auth context
-const isAdmin = true; // Temporary - will be replaced with real auth logic
-
-const rhNavItems: NavItem[] = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { 
-    title: "Vagas", 
-    url: "/vagas", 
-    icon: Briefcase,
-    children: [
-      { title: "Todas as Vagas", url: "/vagas", icon: List },
-      { title: "Nova Solicitação", url: "/vagas/nova", icon: PlusCircle },
-    ]
-  },
-  { title: "Colaboradores", url: "/colaboradores", icon: Users },
-  { title: "Férias", url: "/ferias", icon: Calendar },
-  { 
-    title: "Gestores", 
-    url: "/gestores", 
-    icon: UserCog,
-    children: [
-      { title: "Colaboradores do Setor", url: "/gestores/colaboradores", icon: UsersRound },
-      { title: "Solicitação de Vaga", url: "/gestores/solicitacao-vaga", icon: FileText },
-      { title: "Solicitação de Férias", url: "/gestores/solicitacao-ferias", icon: CalendarPlus },
-      { title: "Avaliações", url: "/gestores/avaliacoes", icon: Star },
-    ]
-  },
-  { title: "Modo TV", url: "/modo-tv", icon: Tv },
-  ...(isAdmin ? [{ title: "Configurações", url: "/configuracoes", icon: Settings }] : []),
-];
 
 export function AppSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAdmin, signOut, user } = useAuth();
+
+  const rhNavItems: NavItem[] = [
+    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+    { 
+      title: "Vagas", 
+      url: "/vagas", 
+      icon: Briefcase,
+      children: [
+        { title: "Todas as Vagas", url: "/vagas", icon: List },
+        { title: "Nova Solicitação", url: "/vagas/nova", icon: PlusCircle },
+      ]
+    },
+    { title: "Colaboradores", url: "/colaboradores", icon: Users },
+    { title: "Férias", url: "/ferias", icon: Calendar },
+    { 
+      title: "Gestores", 
+      url: "/gestores", 
+      icon: UserCog,
+      children: [
+        { title: "Colaboradores do Setor", url: "/gestores/colaboradores", icon: UsersRound },
+        { title: "Solicitação de Vaga", url: "/gestores/solicitacao-vaga", icon: FileText },
+        { title: "Solicitação de Férias", url: "/gestores/solicitacao-ferias", icon: CalendarPlus },
+        { title: "Avaliações", url: "/gestores/avaliacoes", icon: Star },
+      ]
+    },
+    { title: "Modo TV", url: "/modo-tv", icon: Tv },
+    { title: "Configurações", url: "/configuracoes", icon: Settings, adminOnly: true },
+  ];
+
+  // Filter items based on admin status
+  const filteredNavItems = rhNavItems.filter(item => !item.adminOnly || isAdmin);
 
   // Determina quais menus devem estar expandidos baseado na rota atual
   const getExpandedItemsFromRoute = () => {
     const expanded: string[] = [];
-    rhNavItems.forEach((item) => {
+    filteredNavItems.forEach((item) => {
       if (item.children) {
         const isChildActive = item.children.some((child) => 
           location.pathname === child.url || location.pathname.startsWith(child.url + "/")
@@ -108,6 +111,11 @@ export function AppSidebar() {
       return item.children.some((child) => location.pathname.startsWith(child.url));
     }
     return location.pathname.startsWith(item.url);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
   };
 
   return (
@@ -149,7 +157,7 @@ export function AppSidebar() {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-            {rhNavItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <div key={item.title}>
                 {item.children ? (
                   <>
@@ -223,6 +231,19 @@ export function AppSidebar() {
             ))}
           </nav>
 
+          {/* User section */}
+          {user && (
+            <div className="border-t border-sidebar-border p-3">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
+            </div>
+          )}
         </div>
       </aside>
     </>

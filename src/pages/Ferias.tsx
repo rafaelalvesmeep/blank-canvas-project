@@ -6,12 +6,8 @@ import {
   Calendar,
   CheckCircle2,
   CalendarDays,
-  Umbrella,
-  Sun,
   Loader2,
-  User,
   Building2,
-  Mail,
   FileText,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -50,7 +46,6 @@ export default function Ferias() {
     },
   });
 
-  // Calculate stats
   const today = new Date();
   const emFeriasAgora = feriasAprovadas.filter((f) => {
     try {
@@ -98,169 +93,136 @@ export default function Ferias() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-chart-1 to-blue-500 shadow-lg">
-                <Umbrella className="h-7 w-7 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 shadow-md">
-                <Sun className="h-3.5 w-3.5 text-white" />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Férias Aprovadas
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Visualização das férias aprovadas pelos gestores
-              </p>
-            </div>
-          </div>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Férias Aprovadas
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Acompanhamento das férias aprovadas pelos gestores
+          </p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="bg-gradient-to-br from-success/5 via-success/10 to-transparent border-success/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/20 group-hover:scale-110 transition-transform">
-                <CheckCircle2 className="h-6 w-6 text-success" />
+          <Card className="group hover:border-success/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 group-hover:bg-success/20 transition-colors">
+                <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{feriasAprovadas.length}</p>
-                <p className="text-sm text-muted-foreground">Total Aprovadas</p>
+                <p className="text-2xl font-semibold">{feriasAprovadas.length}</p>
+                <p className="text-xs text-muted-foreground">Total aprovadas</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-chart-1/5 via-chart-1/10 to-transparent border-chart-1/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-chart-1/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chart-1/20 group-hover:scale-110 transition-transform">
-                <Umbrella className="h-6 w-6 text-chart-1" />
+          <Card className="group hover:border-chart-1/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-1/10 group-hover:bg-chart-1/20 transition-colors">
+                <CalendarDays className="h-5 w-5 text-chart-1" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{emFeriasAgora}</p>
-                <p className="text-sm text-muted-foreground">Em férias agora</p>
+                <p className="text-2xl font-semibold">{emFeriasAgora}</p>
+                <p className="text-xs text-muted-foreground">Em férias agora</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-transparent border-primary/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 group-hover:scale-110 transition-transform">
-                <CalendarDays className="h-6 w-6 text-primary" />
+          <Card className="group hover:border-primary/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Calendar className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{proximasFerias}</p>
-                <p className="text-sm text-muted-foreground">Próximas férias</p>
+                <p className="text-2xl font-semibold">{proximasFerias}</p>
+                <p className="text-xs text-muted-foreground">Próximas férias</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Approved Vacations Table */}
-        <Card className="border-border/50 shadow-lg overflow-hidden">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle>Férias Aprovadas</CardTitle>
-                <CardDescription>
-                  Lista de férias aprovadas pelos gestores de cada setor
-                </CardDescription>
-              </div>
-            </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">Registro de Férias</CardTitle>
+            <CardDescription className="text-xs">
+              Férias aprovadas pelos gestores de cada setor
+            </CardDescription>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent>
             {isLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : feriasAprovadas.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 mb-4">
-                  <Calendar className="h-10 w-10 text-muted-foreground/50" />
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted mb-3">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <p className="text-lg font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground">
                   Nenhuma férias aprovada
                 </p>
-                <p className="text-sm text-muted-foreground/70 mt-1">
+                <p className="text-xs text-muted-foreground/70 mt-0.5">
                   As férias aprovadas pelos gestores aparecerão aqui
                 </p>
               </div>
             ) : (
-              <div className="rounded-lg border border-border/50 overflow-hidden">
+              <div className="rounded-lg border overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-muted/30 hover:bg-muted/30">
-                      <TableHead>Colaborador</TableHead>
-                      <TableHead>Setor</TableHead>
-                      <TableHead>Período</TableHead>
-                      <TableHead className="text-center">Dias</TableHead>
-                      <TableHead>Aprovado por</TableHead>
-                      <TableHead>Data Aprovação</TableHead>
-                      <TableHead>Observações</TableHead>
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="text-xs">Colaborador</TableHead>
+                      <TableHead className="text-xs">Setor</TableHead>
+                      <TableHead className="text-xs">Período</TableHead>
+                      <TableHead className="text-xs text-center">Dias</TableHead>
+                      <TableHead className="text-xs">Aprovado por</TableHead>
+                      <TableHead className="text-xs">Data</TableHead>
+                      <TableHead className="text-xs">Obs.</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {feriasAprovadas.map((ferias) => (
-                      <TableRow key={ferias.id} className="hover:bg-muted/20">
+                      <TableRow key={ferias.id} className="hover:bg-muted/30">
                         <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 ring-2 ring-background shadow-md">
-                              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-semibold text-sm">
+                          <div className="flex items-center gap-2.5">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                                 {getInitials(ferias.employee_name)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium">{ferias.employee_name}</p>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Mail className="h-3 w-3" />
-                                <span>{ferias.employee_email}</span>
-                              </div>
+                              <p className="text-sm font-medium">{ferias.employee_name}</p>
+                              <p className="text-xs text-muted-foreground">{ferias.employee_email}</p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-muted-foreground" />
-                            <Badge variant="outline" className="bg-muted/50">
-                              {ferias.department}
-                            </Badge>
+                          <div className="flex items-center gap-1.5">
+                            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">{ferias.department}</span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1 text-sm">
-                            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                            <span>
-                              {formatDate(ferias.start_date)} - {formatDate(ferias.end_date)}
-                            </span>
-                          </div>
+                          <span className="text-sm">
+                            {formatDate(ferias.start_date)} - {formatDate(ferias.end_date)}
+                          </span>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge className="bg-primary/10 text-primary border-primary/20">
-                            {ferias.days_count} dias
+                          <Badge variant="secondary" className="text-xs">
+                            {ferias.days_count}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           {(ferias as { approved_by?: string }).approved_by ? (
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-success" />
-                              <span className="text-sm font-medium">
-                                {(ferias as { approved_by?: string }).approved_by}
-                              </span>
-                            </div>
+                            <span className="text-sm">
+                              {(ferias as { approved_by?: string }).approved_by}
+                            </span>
                           ) : (
-                            <span className="text-sm text-muted-foreground">-</span>
+                            <span className="text-sm text-muted-foreground">—</span>
                           )}
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatDateTime(ferias.updated_at)}
                           </span>
                         </TableCell>
@@ -268,19 +230,16 @@ export default function Ferias() {
                           {ferias.notes ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex items-center gap-1 cursor-pointer">
-                                  <FileText className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm text-muted-foreground truncate max-w-[100px]">
-                                    {ferias.notes}
-                                  </span>
+                                <div className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
+                                  <FileText className="h-3.5 w-3.5" />
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs">
-                                <p>{ferias.notes}</p>
+                                <p className="text-xs">{ferias.notes}</p>
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <span className="text-sm text-muted-foreground">-</span>
+                            <span className="text-sm text-muted-foreground">—</span>
                           )}
                         </TableCell>
                       </TableRow>

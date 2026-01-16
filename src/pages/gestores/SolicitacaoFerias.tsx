@@ -57,19 +57,25 @@ export default function SolicitacaoFerias() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, approvedBy }: { id: string; status: string; approvedBy?: string }) => {
       const supabase = getSupabaseClient();
       if (!supabase) throw new Error("Backend indisponível: variáveis de ambiente não carregadas.");
 
+      const updateData: { status: string; approved_by?: string } = { status };
+      if (approvedBy) {
+        updateData.approved_by = approvedBy;
+      }
+
       const { error } = await supabase
         .from("vacation_requests")
-        .update({ status })
+        .update(updateData)
         .eq("id", id);
 
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["vacation-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["vacation-requests-approved"] });
       toast.success(
         variables.status === "aprovada"
           ? "Solicitação aprovada com sucesso!"
@@ -87,8 +93,15 @@ export default function SolicitacaoFerias() {
     total: solicitacoes.length,
   };
 
-  const handleApprove = (id: string) => {
-    updateStatusMutation.mutate({ id, status: "aprovada" });
+  // TODO: Replace with actual logged-in manager name when auth is implemented
+  const gestorNome = "Gestor do Setor";
+
+  const handleApprove = (id: string, department: string) => {
+    updateStatusMutation.mutate({ 
+      id, 
+      status: "aprovada", 
+      approvedBy: `${gestorNome} (${department})` 
+    });
   };
 
   const handleReject = (id: string) => {
@@ -255,7 +268,7 @@ export default function SolicitacaoFerias() {
                               variant="ghost" 
                               size="sm" 
                               className="hover:bg-success/10 hover:text-success"
-                              onClick={() => handleApprove(sol.id)}
+                              onClick={() => handleApprove(sol.id, sol.department)}
                               disabled={updateStatusMutation.isPending}
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />

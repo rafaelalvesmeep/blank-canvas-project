@@ -43,6 +43,7 @@ export type Database = {
       }
       vacation_requests: {
         Row: {
+          approved_by: string | null
           created_at: string
           days_count: number
           department: string
@@ -58,6 +59,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approved_by?: string | null
           created_at?: string
           days_count: number
           department: string
@@ -73,6 +75,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approved_by?: string | null
           created_at?: string
           days_count?: number
           department?: string

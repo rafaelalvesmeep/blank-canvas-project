@@ -24,14 +24,12 @@ import {
   Users,
   Search,
   Plus,
-  Filter,
   Eye,
   MoreHorizontal,
   Building2,
   Calendar,
-  Sparkles,
   UserCheck,
-  UserX,
+  CalendarDays,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -88,28 +86,18 @@ export default function Colaboradores() {
 
   return (
     <MainLayout showSearch>
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg">
-                <Users className="h-7 w-7 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-md">
-                <Sparkles className="h-3.5 w-3.5 text-white" />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Colaboradores
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {colaboradores.length} colaboradores cadastrados
-              </p>
-            </div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              Colaboradores
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              {colaboradores.length} colaboradores cadastrados
+            </p>
           </div>
-          <Button variant="gradient" className="gap-2 shadow-lg hover:shadow-xl transition-all">
+          <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Novo Colaborador
           </Button>
@@ -117,61 +105,58 @@ export default function Colaboradores() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-transparent border-primary/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 group-hover:scale-110 transition-transform">
-                <Users className="h-6 w-6 text-primary" />
+          <Card className="group hover:border-primary/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Users className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-semibold">{stats.total}</p>
+                <p className="text-xs text-muted-foreground">Total</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-success/5 via-success/10 to-transparent border-success/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/20 group-hover:scale-110 transition-transform">
-                <UserCheck className="h-6 w-6 text-success" />
+          <Card className="group hover:border-success/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 group-hover:bg-success/20 transition-colors">
+                <UserCheck className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{stats.ativos}</p>
-                <p className="text-sm text-muted-foreground">Ativos</p>
+                <p className="text-2xl font-semibold">{stats.ativos}</p>
+                <p className="text-xs text-muted-foreground">Ativos</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-chart-1/5 via-chart-1/10 to-transparent border-chart-1/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-chart-1/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chart-1/20 group-hover:scale-110 transition-transform">
-                <UserX className="h-6 w-6 text-chart-1" />
+          <Card className="group hover:border-chart-1/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-1/10 group-hover:bg-chart-1/20 transition-colors">
+                <CalendarDays className="h-5 w-5 text-chart-1" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{stats.ferias}</p>
-                <p className="text-sm text-muted-foreground">Em Férias</p>
+                <p className="text-2xl font-semibold">{stats.ferias}</p>
+                <p className="text-xs text-muted-foreground">Em Férias</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters */}
-        <Card className="border-border/50 shadow-lg overflow-hidden">
-          <CardContent className="p-4 bg-gradient-to-r from-muted/30 to-transparent">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome ou cargo..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-background/50 border-border/50 focus:border-primary"
+                  className="pl-9"
                 />
               </div>
               <div className="flex gap-2">
                 <Select value={filterSetor} onValueChange={setFilterSetor}>
-                  <SelectTrigger className="w-[180px] bg-background/50 border-border/50">
-                    <Building2 className="mr-2 h-4 w-4" />
+                  <SelectTrigger className="w-[160px]">
+                    <Building2 className="mr-2 h-4 w-4 text-muted-foreground" />
                     <SelectValue placeholder="Setor" />
                   </SelectTrigger>
                   <SelectContent>
@@ -184,8 +169,7 @@ export default function Colaboradores() {
                   </SelectContent>
                 </Select>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-[150px] bg-background/50 border-border/50">
-                    <Filter className="mr-2 h-4 w-4" />
+                  <SelectTrigger className="w-[130px]">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -201,16 +185,16 @@ export default function Colaboradores() {
         </Card>
 
         {/* Table */}
-        <Card className="border-border/50 shadow-lg overflow-hidden">
+        <Card>
           <CardContent className="p-0">
             {filteredColaboradores.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 mb-4">
-                  <Users className="h-10 w-10 text-muted-foreground/50" />
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted mb-3">
+                  <Users className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <p className="text-lg font-medium text-muted-foreground">Nenhum colaborador encontrado</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Adicione seu primeiro colaborador para começar</p>
-                <Button variant="gradient" className="mt-6 gap-2">
+                <p className="text-sm font-medium text-muted-foreground">Nenhum colaborador encontrado</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">Adicione seu primeiro colaborador para começar</p>
+                <Button className="mt-4 gap-2" size="sm">
                   <Plus className="h-4 w-4" />
                   Adicionar Colaborador
                 </Button>
@@ -218,35 +202,35 @@ export default function Colaboradores() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-border/50">
-                    <TableHead className="w-[300px]">Colaborador</TableHead>
-                    <TableHead>Setor</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Admissão</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-[100px]">Ações</TableHead>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-[280px] text-xs">Colaborador</TableHead>
+                    <TableHead className="text-xs">Setor</TableHead>
+                    <TableHead className="text-xs">Tipo</TableHead>
+                    <TableHead className="text-xs">Admissão</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="w-[80px] text-xs">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredColaboradores.map((col) => (
-                    <TableRow key={col.id} className="group hover:bg-muted/30 transition-colors">
+                    <TableRow key={col.id} className="group">
                       <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 ring-2 ring-background shadow-md">
-                            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-sm font-semibold">
+                        <div className="flex items-center gap-2.5">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                               {col.avatar}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium group-hover:text-primary transition-colors">{col.nome}</p>
-                            <p className="text-sm text-muted-foreground">{col.cargo}</p>
+                            <p className="text-sm font-medium">{col.nome}</p>
+                            <p className="text-xs text-muted-foreground">{col.cargo}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
-                          {col.setor}
+                        <div className="flex items-center gap-1.5">
+                          <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm">{col.setor}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -255,35 +239,32 @@ export default function Colaboradores() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          {col.admissao}
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span className="text-sm">{col.admissao}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={statusColors[col.status]}
-                        >
+                        <Badge variant="outline" className={statusColors[col.status]}>
                           {col.status.charAt(0).toUpperCase() + col.status.slice(1)}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
-                            <Eye className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <Eye className="h-3.5 w-3.5" />
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                                <MoreHorizontal className="h-3.5 w-3.5" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-                              <DropdownMenuItem>Editar</DropdownMenuItem>
-                              <DropdownMenuItem>Ver timeline</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem className="text-xs">Ver perfil</DropdownMenuItem>
+                              <DropdownMenuItem className="text-xs">Editar</DropdownMenuItem>
+                              <DropdownMenuItem className="text-xs">Ver timeline</DropdownMenuItem>
+                              <DropdownMenuItem className="text-xs text-destructive">
                                 Desligar
                               </DropdownMenuItem>
                             </DropdownMenuContent>

@@ -7,7 +7,6 @@ import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
-import Login from "./pages/Login";
 import LoginMeep from "./pages/LoginMeep";
 import SignupMeep from "./pages/SignupMeep";
 import AguardandoAprovacao from "./pages/AguardandoAprovacao";
@@ -36,8 +35,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/login-meep" element={<LoginMeep />} />
+            <Route path="/login" element={<LoginMeep />} />
             <Route path="/signup-meep" element={<SignupMeep />} />
             <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
             <Route

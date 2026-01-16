@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Briefcase, Plus, Clock, CheckCircle, XCircle, Target, Sparkles } from "lucide-react";
+import { Briefcase, Plus, Clock, CheckCircle, XCircle } from "lucide-react";
 
 const solicitacoes: {
   id: string;
@@ -47,11 +47,11 @@ const urgenciaColors: Record<string, string> = {
 const StatusIcon = ({ status }: { status: string }) => {
   switch (status) {
     case "pendente":
-      return <Clock className="h-4 w-4 text-warning" />;
+      return <Clock className="h-3.5 w-3.5 text-warning" />;
     case "aprovada":
-      return <CheckCircle className="h-4 w-4 text-success" />;
+      return <CheckCircle className="h-3.5 w-3.5 text-success" />;
     case "reprovada":
-      return <XCircle className="h-4 w-4 text-destructive" />;
+      return <XCircle className="h-3.5 w-3.5 text-destructive" />;
     default:
       return null;
   }
@@ -68,32 +68,18 @@ export default function SolicitacaoVaga() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-chart-1 to-primary shadow-lg">
-                <Briefcase className="h-7 w-7 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-md">
-                <Target className="h-3.5 w-3.5 text-white" />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Solicitação de Vaga
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Solicite novas vagas para sua equipe
-              </p>
-            </div>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              Solicitação de Vaga
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Solicite novas vagas para sua equipe
+            </p>
           </div>
-          <Button 
-            variant="gradient" 
-            className="gap-2 shadow-lg hover:shadow-xl transition-all"
-            onClick={() => setShowForm(!showForm)}
-          >
+          <Button className="gap-2" onClick={() => setShowForm(!showForm)}>
             <Plus className="h-4 w-4" />
             Nova Solicitação
           </Button>
@@ -101,39 +87,36 @@ export default function SolicitacaoVaga() {
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="bg-gradient-to-br from-warning/5 via-warning/10 to-transparent border-warning/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-warning/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/20 group-hover:scale-110 transition-transform">
-                <Clock className="h-6 w-6 text-warning" />
+          <Card className="group hover:border-warning/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 group-hover:bg-warning/20 transition-colors">
+                <Clock className="h-5 w-5 text-warning" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{stats.pendentes}</p>
-                <p className="text-sm text-muted-foreground">Pendentes</p>
+                <p className="text-2xl font-semibold">{stats.pendentes}</p>
+                <p className="text-xs text-muted-foreground">Pendentes</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-success/5 via-success/10 to-transparent border-success/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/20 group-hover:scale-110 transition-transform">
-                <CheckCircle className="h-6 w-6 text-success" />
+          <Card className="group hover:border-success/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 group-hover:bg-success/20 transition-colors">
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{stats.aprovadas}</p>
-                <p className="text-sm text-muted-foreground">Aprovadas</p>
+                <p className="text-2xl font-semibold">{stats.aprovadas}</p>
+                <p className="text-xs text-muted-foreground">Aprovadas</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-transparent border-primary/20 hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
-            <CardContent className="flex items-center gap-4 p-6 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 group-hover:scale-110 transition-transform">
-                <Briefcase className="h-6 w-6 text-primary" />
+          <Card className="group hover:border-primary/30 transition-colors">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Briefcase className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-3xl font-bold">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-semibold">{stats.total}</p>
+                <p className="text-xs text-muted-foreground">Total</p>
               </div>
             </CardContent>
           </Card>
@@ -141,28 +124,21 @@ export default function SolicitacaoVaga() {
 
         {/* Form */}
         {showForm && (
-          <Card className="border-border/50 shadow-lg overflow-hidden">
-            <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-transparent">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20">
-                  <Plus className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Nova Solicitação de Vaga</CardTitle>
-                  <CardDescription>Preencha os dados da vaga que você precisa</CardDescription>
-                </div>
-              </div>
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-medium">Nova Solicitação de Vaga</CardTitle>
+              <CardDescription className="text-xs">Preencha os dados da vaga que você precisa</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="cargo">Cargo</Label>
-                  <Input id="cargo" placeholder="Ex: Desenvolvedor Frontend" className="bg-background/50 border-border/50" />
+                <div className="space-y-1.5">
+                  <Label htmlFor="cargo" className="text-sm">Cargo</Label>
+                  <Input id="cargo" placeholder="Ex: Desenvolvedor Frontend" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tipo">Tipo de Contratação</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="tipo" className="text-sm">Tipo de Contratação</Label>
                   <Select>
-                    <SelectTrigger className="bg-background/50 border-border/50">
+                    <SelectTrigger>
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -173,10 +149,10 @@ export default function SolicitacaoVaga() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="urgencia">Urgência</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="urgencia" className="text-sm">Urgência</Label>
                   <Select>
-                    <SelectTrigger className="bg-background/50 border-border/50">
+                    <SelectTrigger>
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -186,31 +162,29 @@ export default function SolicitacaoVaga() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="quantidade">Quantidade de Vagas</Label>
-                  <Input id="quantidade" type="number" min="1" defaultValue="1" className="bg-background/50 border-border/50" />
+                <div className="space-y-1.5">
+                  <Label htmlFor="quantidade" className="text-sm">Quantidade de Vagas</Label>
+                  <Input id="quantidade" type="number" min="1" defaultValue="1" />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="justificativa">Justificativa</Label>
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label htmlFor="justificativa" className="text-sm">Justificativa</Label>
                   <Textarea
                     id="justificativa"
                     placeholder="Descreva o motivo da solicitação..."
                     rows={3}
-                    className="bg-background/50 border-border/50"
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="requisitos">Requisitos da Vaga</Label>
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label htmlFor="requisitos" className="text-sm">Requisitos da Vaga</Label>
                   <Textarea
                     id="requisitos"
                     placeholder="Liste os requisitos necessários..."
                     rows={3}
-                    className="bg-background/50 border-border/50"
                   />
                 </div>
               </div>
-              <div className="mt-6 flex gap-2">
-                <Button variant="gradient">Enviar Solicitação</Button>
+              <div className="mt-5 flex gap-2">
+                <Button>Enviar Solicitação</Button>
                 <Button variant="outline" onClick={() => setShowForm(false)}>
                   Cancelar
                 </Button>
@@ -220,28 +194,20 @@ export default function SolicitacaoVaga() {
         )}
 
         {/* Minhas Solicitações */}
-        <Card className="border-border/50 shadow-lg overflow-hidden">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Briefcase className="h-5 w-5 text-primary" />
-              </div>
-              <CardTitle>Minhas Solicitações</CardTitle>
-            </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">Minhas Solicitações</CardTitle>
+            <CardDescription className="text-xs">Histórico de solicitações realizadas</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {solicitacoes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 mb-4">
-                  <Briefcase className="h-10 w-10 text-muted-foreground/50" />
+              <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted mb-3">
+                  <Briefcase className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <p className="text-lg font-medium text-muted-foreground">Nenhuma solicitação encontrada</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Crie uma nova solicitação para começar</p>
-                <Button 
-                  variant="gradient" 
-                  className="mt-6 gap-2"
-                  onClick={() => setShowForm(true)}
-                >
+                <p className="text-sm font-medium text-muted-foreground">Nenhuma solicitação encontrada</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">Crie uma nova solicitação para começar</p>
+                <Button className="mt-4 gap-2" size="sm" onClick={() => setShowForm(true)}>
                   <Plus className="h-4 w-4" />
                   Nova Solicitação
                 </Button>
@@ -249,38 +215,38 @@ export default function SolicitacaoVaga() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-border/50">
-                    <TableHead>Cargo</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Urgência</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-xs">Cargo</TableHead>
+                    <TableHead className="text-xs">Tipo</TableHead>
+                    <TableHead className="text-xs">Urgência</TableHead>
+                    <TableHead className="text-xs">Data</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-right text-xs">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {solicitacoes.map((sol) => (
-                    <TableRow key={sol.id} className="group hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-medium group-hover:text-primary transition-colors">{sol.cargo}</TableCell>
-                      <TableCell>{sol.tipo}</TableCell>
+                    <TableRow key={sol.id} className="group">
+                      <TableCell className="text-sm font-medium">{sol.cargo}</TableCell>
+                      <TableCell className="text-sm">{sol.tipo}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={urgenciaColors[sol.urgencia]}>
+                        <Badge variant="outline" className={`text-xs ${urgenciaColors[sol.urgencia]}`}>
                           {sol.urgencia}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
                         {new Date(sol.dataSolicitacao).toLocaleDateString("pt-BR")}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <StatusIcon status={sol.status} />
-                          <Badge variant="outline" className={statusColors[sol.status]}>
+                          <Badge variant="outline" className={`text-xs ${statusColors[sol.status]}`}>
                             {sol.status}
                           </Badge>
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                        <Button variant="ghost" size="sm" className="h-7 text-xs">
                           Detalhes
                         </Button>
                       </TableCell>

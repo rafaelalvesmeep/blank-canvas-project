@@ -63,7 +63,7 @@ const StatusIcon = ({ status }: { status: string }) => {
 
 export default function SolicitacaoFerias() {
   const queryClient = useQueryClient();
-  const { profile, sectors, isGestor } = useAuth();
+  const { profile, sectors, isGestor, isAdmin } = useAuth();
 
   // Map sectors to department labels for filtering
   const gestorDepartments = sectors.map(s => SECTOR_LABEL_MAP[s] || s);
@@ -79,8 +79,8 @@ export default function SolicitacaoFerias() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      // If user is a gestor, filter by their sectors
-      if (isGestor && gestorDepartments.length > 0) {
+      // Admins see all, gestores see only their sectors
+      if (!isAdmin && isGestor && gestorDepartments.length > 0) {
         query = query.in("department", gestorDepartments);
       }
 
@@ -154,7 +154,12 @@ export default function SolicitacaoFerias() {
             <p className="text-muted-foreground text-sm mt-1">
               Gerencie as solicitações de férias dos colaboradores
             </p>
-            {isGestor && gestorDepartments.length > 0 && (
+            {isAdmin && (
+              <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-primary border-primary/20">
+                Visualização completa (Admin)
+              </Badge>
+            )}
+            {!isAdmin && isGestor && gestorDepartments.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {gestorDepartments.map((dept) => (
                   <Badge key={dept} variant="secondary" className="text-xs">
@@ -173,7 +178,7 @@ export default function SolicitacaoFerias() {
         </div>
 
         {/* Aviso se gestor sem setores */}
-        {isGestor && sectors.length === 0 && (
+        {!isAdmin && isGestor && sectors.length === 0 && (
           <Card className="border-warning/50 bg-warning/5">
             <CardContent className="flex items-center gap-3 p-4">
               <AlertCircle className="h-5 w-5 text-warning shrink-0" />

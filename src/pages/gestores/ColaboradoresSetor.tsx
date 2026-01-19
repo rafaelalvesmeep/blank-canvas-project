@@ -58,15 +58,17 @@ const statusColors: Record<string, string> = {
 
 export default function ColaboradoresSetor() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { sectors, isGestor } = useAuth();
+  const { sectors, isGestor, isAdmin } = useAuth();
 
   // Map sectors to department labels for filtering
   const gestorDepartments = sectors.map(s => SECTOR_LABEL_MAP[s] || s);
 
-  // Filter colaboradores by gestor's sectors
-  const colaboradoresFiltradosPorSetor = isGestor && gestorDepartments.length > 0
-    ? colaboradores.filter((colab) => gestorDepartments.includes(colab.setor))
-    : colaboradores;
+  // Admins see all, gestores see only their sectors
+  const colaboradoresFiltradosPorSetor = isAdmin 
+    ? colaboradores 
+    : (isGestor && gestorDepartments.length > 0
+        ? colaboradores.filter((colab) => gestorDepartments.includes(colab.setor))
+        : colaboradores);
 
   const filteredColaboradores = colaboradoresFiltradosPorSetor.filter((colab) =>
     colab.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -100,7 +102,12 @@ export default function ColaboradoresSetor() {
               <p className="text-muted-foreground mt-1">
                 Gerencie os colaboradores da sua equipe
               </p>
-              {isGestor && gestorDepartments.length > 0 && (
+              {isAdmin && (
+                <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-primary border-primary/20">
+                  Visualização completa (Admin)
+                </Badge>
+              )}
+              {!isAdmin && isGestor && gestorDepartments.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {gestorDepartments.map((dept) => (
                     <Badge key={dept} variant="secondary" className="text-xs">
@@ -118,7 +125,7 @@ export default function ColaboradoresSetor() {
         </div>
 
         {/* Aviso se gestor sem setores */}
-        {isGestor && sectors.length === 0 && (
+        {!isAdmin && isGestor && sectors.length === 0 && (
           <Card className="border-warning/50 bg-warning/5">
             <CardContent className="flex items-center gap-3 p-4">
               <AlertCircle className="h-5 w-5 text-warning shrink-0" />

@@ -122,9 +122,11 @@ const App = () => (
             <Route
               path="/modo-tv"
               element={
-                <Suspense fallback={null}>
-                  <ModoTV />
-                </Suspense>
+                <ProtectedRoute>
+                  <Suspense fallback={null}>
+                    <ModoTV />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -3,7 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { MeepAuthManager } from "@/lib/meep-auth-manager";
 
-type AppRole = "admin" | "rh" | "gestor";
+type AppRole = "admin" | "rh" | "gestor" | "modo_tv";
 type AppSector = "comercial" | "compliance" | "cs_meep" | "cs_mee" | "desenvolvimento" | "marketing" | "suporte";
 
 interface Profile {
@@ -31,6 +31,7 @@ interface AuthContextType {
   isLoading: boolean;
   isApproved: boolean;
   isAdmin: boolean;
+  isModoTV: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -201,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     isApproved: profile?.is_approved ?? false,
     isAdmin: role === "admin",
+    isModoTV: role === "modo_tv",
     signIn,
     signUp,
     signOut,

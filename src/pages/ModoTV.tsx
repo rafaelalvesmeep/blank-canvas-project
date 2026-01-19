@@ -366,7 +366,7 @@ export default function ModoTV() {
 
   return (
     <MainLayout>
-      <div className="space-y-8">
+      <div className="space-y-8 p-4 md:p-6 lg:p-8">
         {envMissing && (
           <Card className="border-warning/50 bg-warning/5">
             <CardContent className="py-4">

@@ -40,13 +40,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Users, UserCheck, Check, X, Edit2, Search, Shield, Building2, Mail } from "lucide-react";
+import { Users, UserCheck, Check, X, Edit2, Search, Shield, Building2, Mail, Tv } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-type AppRole = "admin" | "rh" | "gestor";
+type AppRole = "admin" | "rh" | "gestor" | "modo_tv";
 type AppSector = "comercial" | "compliance" | "cs_meep" | "cs_mee" | "desenvolvimento" | "marketing" | "suporte";
 
 interface ProfileWithRole {
@@ -74,6 +74,7 @@ const ROLES: { value: AppRole; label: string; description: string }[] = [
   { value: "admin", label: "Admin", description: "Acesso total ao sistema" },
   { value: "rh", label: "RH", description: "Gestão de pessoas e vagas" },
   { value: "gestor", label: "Gestor", description: "Gestão do setor atribuído" },
+  { value: "modo_tv", label: "Modo TV", description: "Acesso apenas à apresentação TV" },
 ];
 
 export default function Configuracoes() {
@@ -131,6 +132,7 @@ export default function Configuracoes() {
     admins: approvedUsers.filter((u) => u.role === "admin").length,
     rh: approvedUsers.filter((u) => u.role === "rh").length,
     gestores: approvedUsers.filter((u) => u.role === "gestor").length,
+    modoTv: approvedUsers.filter((u) => u.role === "modo_tv").length,
     pending: pendingUsers.length,
   };
 
@@ -243,11 +245,19 @@ export default function Configuracoes() {
       admin: { variant: "destructive", className: "bg-red-100 text-red-700 hover:bg-red-100" },
       rh: { variant: "default", className: "bg-primary/10 text-primary hover:bg-primary/10" },
       gestor: { variant: "secondary", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" },
+      modo_tv: { variant: "secondary", className: "bg-purple-100 text-purple-700 hover:bg-purple-100" },
+    };
+
+    const labels: Record<AppRole, string> = {
+      admin: "ADMIN",
+      rh: "RH",
+      gestor: "GESTOR",
+      modo_tv: "MODO TV",
     };
 
     return (
       <Badge variant={config[role].variant} className={config[role].className}>
-        {role.toUpperCase()}
+        {labels[role]}
       </Badge>
     );
   };
@@ -275,7 +285,7 @@ export default function Configuracoes() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card className="bg-card">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -341,6 +351,19 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
+          <Card className="bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <Tv className="h-4 w-4 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{stats.modoTv}</p>
+                  <p className="text-xs text-muted-foreground">Modo TV</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Tabs */}
@@ -380,6 +403,7 @@ export default function Configuracoes() {
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="rh">RH</SelectItem>
                   <SelectItem value="gestor">Gestor</SelectItem>
+                  <SelectItem value="modo_tv">Modo TV</SelectItem>
                 </SelectContent>
               </Select>
             </div>

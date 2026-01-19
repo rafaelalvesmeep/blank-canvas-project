@@ -36,7 +36,7 @@ export function AppSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin, signOut, user } = useAuth();
+  const { isAdmin, isModoTV, signOut, user } = useAuth();
 
   const rhNavItems: NavItem[] = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -66,8 +66,11 @@ export function AppSidebar() {
     { title: "Configurações", url: "/configuracoes", icon: Settings, adminOnly: true },
   ];
 
-  // Filter items based on admin status
-  const filteredNavItems = rhNavItems.filter(item => !item.adminOnly || isAdmin);
+  // Filter items based on role
+  // If user has 'modo_tv' role, only show Modo TV menu
+  const filteredNavItems = isModoTV 
+    ? rhNavItems.filter(item => item.url === "/modo-tv")
+    : rhNavItems.filter(item => !item.adminOnly || isAdmin);
 
   // Determina quais menus devem estar expandidos baseado na rota atual
   const getExpandedItemsFromRoute = () => {

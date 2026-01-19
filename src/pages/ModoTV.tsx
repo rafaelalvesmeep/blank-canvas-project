@@ -19,7 +19,6 @@ import {
   MonitorPlay,
   Plus,
   Clock,
-  Sparkles,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -291,22 +290,22 @@ export default function ModoTV() {
         {/* Close button */}
         <button
           onClick={exitFullscreen}
-          className="absolute top-6 right-6 z-20 p-3 bg-white/10 backdrop-blur-md rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 group"
+          className="absolute top-6 right-6 z-20 p-3 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
         >
-          <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+          <X className="h-5 w-5" />
         </button>
 
         {/* Navigation buttons */}
         <button
           onClick={prevSlide}
-          className="absolute left-6 z-20 p-4 bg-white/10 backdrop-blur-md rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110"
+          className="absolute left-6 z-20 p-4 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
         >
           <ChevronLeft className="h-8 w-8" />
         </button>
 
         <button
           onClick={nextSlide}
-          className="absolute right-6 z-20 p-4 bg-white/10 backdrop-blur-md rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110"
+          className="absolute right-6 z-20 p-4 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
         >
           <ChevronRight className="h-8 w-8" />
         </button>
@@ -318,7 +317,7 @@ export default function ModoTV() {
               key={currentItem.id}
               src={currentItem.file_url}
               alt={currentItem.file_name}
-              className="max-w-full max-h-full object-contain animate-fade-in rounded-lg shadow-2xl"
+              className="max-w-full max-h-full object-contain"
             />
           ) : (
             <video
@@ -327,37 +326,32 @@ export default function ModoTV() {
               src={currentItem.file_url}
               autoPlay
               onEnded={handleVideoEnded}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-full object-contain"
             />
           )}
         </div>
 
         {/* Progress indicators */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md rounded-full">
-          {mediaItems.map((item, idx) => (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-black/50 rounded-lg">
+          {mediaItems.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
-              className={`relative transition-all duration-300 ${
-                idx === currentIndex ? "scale-125" : "hover:scale-110"
-              }`}
+              className="p-0.5"
             >
               <div
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`w-2.5 h-2.5 rounded-full transition-colors ${
                   idx === currentIndex
-                    ? "bg-white shadow-lg shadow-white/50"
-                    : "bg-white/30 hover:bg-white/50"
+                    ? "bg-white"
+                    : "bg-white/40 hover:bg-white/60"
                 }`}
               />
-              {idx === currentIndex && item.file_type === "image" && (
-                <div className="absolute inset-0 rounded-full animate-ping bg-white/50" />
-              )}
             </button>
           ))}
         </div>
 
         {/* Current slide info */}
-        <div className="absolute top-6 left-6 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-sm font-medium">
+        <div className="absolute top-6 left-6 px-3 py-1.5 bg-black/50 rounded text-white text-sm">
           {currentIndex + 1} / {mediaItems.length}
         </div>
       </div>
@@ -379,26 +373,20 @@ export default function ModoTV() {
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/20">
-              <MonitorPlay className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                Modo TV
-                <Sparkles className="h-5 w-5 text-accent" />
-              </h1>
-              <p className="text-muted-foreground">
-                Gerencie fotos e vídeos para exibição em monitores
-              </p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Modo TV
+            </h1>
+            <p className="text-muted-foreground">
+              Gerencie fotos e vídeos para exibição em monitores
+            </p>
           </div>
 
           <Button
             onClick={startSlideshow}
             disabled={mediaItems.length === 0}
             size="lg"
-            className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg shadow-primary/25"
+            className="gap-2"
           >
             <Play className="h-5 w-5" />
             Iniciar Apresentação
@@ -428,10 +416,10 @@ export default function ModoTV() {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          className={`relative overflow-hidden transition-all duration-300 ${
+          className={`transition-colors ${
             dragOver
-              ? "border-primary border-2 bg-primary/5 scale-[1.01]"
-              : "border-dashed border-2 hover:border-primary/50"
+              ? "border-primary border-2 bg-primary/5"
+              : "border-dashed border-2 hover:border-muted-foreground/50"
           }`}
         >
           <CardContent className="py-12">
@@ -449,18 +437,12 @@ export default function ModoTV() {
               htmlFor="file-upload"
               className="flex flex-col items-center justify-center cursor-pointer"
             >
-              <div
-                className={`p-4 rounded-2xl mb-4 transition-all duration-300 ${
-                  dragOver
-                    ? "bg-primary/20 scale-110"
-                    : "bg-muted group-hover:bg-primary/10"
-                }`}
-              >
+              <div className="p-4 rounded-xl bg-muted mb-4">
                 {uploading ? (
                   <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Upload
-                    className={`h-10 w-10 transition-colors ${
+                    className={`h-10 w-10 ${
                       dragOver ? "text-primary" : "text-muted-foreground"
                     }`}
                   />
@@ -474,9 +456,6 @@ export default function ModoTV() {
               </p>
             </label>
           </CardContent>
-
-          {/* Decorative gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
         </Card>
 
         {/* Media grid */}
@@ -489,11 +468,9 @@ export default function ModoTV() {
           </h2>
 
           {mediaItems.length === 0 ? (
-            <Card className="border-dashed">
+            <Card className="border-dashed border-2">
               <CardContent className="py-16 text-center">
-                <div className="p-4 rounded-2xl bg-muted/50 w-fit mx-auto mb-4">
-                  <MonitorPlay className="h-12 w-12 text-muted-foreground/50" />
-                </div>
+                <MonitorPlay className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-lg font-medium text-foreground mb-1">
                   Nenhuma mídia adicionada
                 </p>
@@ -515,14 +492,14 @@ export default function ModoTV() {
               {mediaItems.map((item, index) => (
                 <Card
                   key={item.id}
-                  className="group relative overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  className="group relative overflow-hidden"
                 >
                   <div className="aspect-video bg-muted relative overflow-hidden">
                     {item.file_type === "image" ? (
                       <img
                         src={item.file_url}
                         alt={item.file_name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <video
@@ -533,14 +510,14 @@ export default function ModoTV() {
                     )}
 
                     {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-between p-3">
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3">
                       <p className="text-white text-xs truncate max-w-[70%]">
                         {item.file_name}
                       </p>
                       <Button
                         variant="destructive"
                         size="icon"
-                        className="h-8 w-8 rounded-full shadow-lg"
+                        className="h-8 w-8"
                         onClick={() => handleDelete(item)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -548,10 +525,10 @@ export default function ModoTV() {
                     </div>
 
                     {/* Badge */}
-                    <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                    <div className="absolute top-2 left-2">
                       <Badge
                         variant="secondary"
-                        className="bg-black/60 text-white border-0 backdrop-blur-sm gap-1 text-xs"
+                        className="bg-black/70 text-white border-0 gap-1 text-xs"
                       >
                         {item.file_type === "image" ? (
                           <ImageIcon className="h-3 w-3" />
@@ -567,7 +544,7 @@ export default function ModoTV() {
                       <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Badge
                           variant="secondary"
-                          className="bg-black/60 text-white border-0 backdrop-blur-sm gap-1 text-xs"
+                          className="bg-black/70 text-white border-0 gap-1 text-xs"
                         >
                           <Clock className="h-3 w-3" />
                           10s
@@ -581,13 +558,11 @@ export default function ModoTV() {
               {/* Add more card */}
               <Card
                 onClick={() => fileInputRef.current?.click()}
-                className="aspect-video flex items-center justify-center border-dashed border-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-300 group"
+                className="aspect-video flex items-center justify-center border-dashed border-2 cursor-pointer hover:border-primary hover:bg-muted/50 transition-colors"
               >
                 <div className="text-center">
-                  <div className="p-3 rounded-full bg-muted group-hover:bg-primary/10 transition-colors mx-auto mb-2">
-                    <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                  <Plus className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
                     Adicionar
                   </p>
                 </div>

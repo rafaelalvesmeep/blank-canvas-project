@@ -10,13 +10,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, FileText, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, FileText, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/integrations/supabase/safeClient";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+
+const SECTOR_LABEL_MAP: Record<string, string> = {
+  administrativo: "Administrativo",
+  canais: "Canais",
+  comercial: "Comercial",
+  compliance: "Compliance",
+  compras: "Compras",
+  cs: "CS",
+  cs_meep: "CS Meep",
+  cs_mee: "CS Mee",
+  desenvolvimento: "Desenvolvimento",
+  eventos: "Eventos",
+  financeiro: "Financeiro",
+  implantacao: "Implantação",
+  integracoes: "Integrações",
+  logistica: "Logística",
+  marketing: "Marketing",
+  produto: "Produto",
+  prospeccao: "Prospecção",
+  rh: "RH",
+  suporte: "Suporte",
+  suporte_tecnico: "Suporte Técnico",
+};
 
 const statusColors: Record<string, string> = {
   pendente: "bg-warning/10 text-warning border-warning/20",
@@ -39,17 +63,28 @@ const StatusIcon = ({ status }: { status: string }) => {
 
 export default function SolicitacaoFerias() {
   const queryClient = useQueryClient();
+  const { profile, sectors, isGestor } = useAuth();
+
+  // Map sectors to department labels for filtering
+  const gestorDepartments = sectors.map(s => SECTOR_LABEL_MAP[s] || s);
 
   const { data: solicitacoes = [], isLoading } = useQuery({
-    queryKey: ["vacation-requests"],
+    queryKey: ["vacation-requests", gestorDepartments],
     queryFn: async () => {
       const supabase = getSupabaseClient();
       if (!supabase) throw new Error("Backend indisponível: variáveis de ambiente não carregadas.");
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("vacation_requests")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // If user is a gestor, filter by their sectors
+      if (isGestor && gestorDepartments.length > 0) {
+        query = query.in("department", gestorDepartments);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
@@ -93,7 +128,7 @@ export default function SolicitacaoFerias() {
     total: solicitacoes.length,
   };
 
-  const gestorNome = "Gestor do Setor";
+  const gestorNome = profile?.full_name || "Gestor do Setor";
 
   const handleApprove = (id: string, department: string) => {
     updateStatusMutation.mutate({ 
@@ -119,6 +154,15 @@ export default function SolicitacaoFerias() {
             <p className="text-muted-foreground text-sm mt-1">
               Gerencie as solicitações de férias dos colaboradores
             </p>
+            {isGestor && gestorDepartments.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {gestorDepartments.map((dept) => (
+                  <Badge key={dept} variant="secondary" className="text-xs">
+                    {dept}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
           <Button variant="outline" size="sm" className="gap-2" asChild>
             <Link to="/docs/integracao-ferias">
@@ -127,6 +171,21 @@ export default function SolicitacaoFerias() {
             </Link>
           </Button>
         </div>
+
+        {/* Aviso se gestor sem setores */}
+        {isGestor && sectors.length === 0 && (
+          <Card className="border-warning/50 bg-warning/5">
+            <CardContent className="flex items-center gap-3 p-4">
+              <AlertCircle className="h-5 w-5 text-warning shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Nenhum setor atribuído</p>
+                <p className="text-xs text-muted-foreground">
+                  Solicite ao administrador que atribua setores ao seu perfil para visualizar as solicitações.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-3">

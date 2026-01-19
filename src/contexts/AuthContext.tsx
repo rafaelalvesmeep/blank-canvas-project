@@ -4,7 +4,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { MeepAuthManager } from "@/lib/meep-auth-manager";
 
 type AppRole = "admin" | "rh" | "gestor" | "modo_tv";
-type AppSector = "comercial" | "compliance" | "cs_meep" | "cs_mee" | "desenvolvimento" | "marketing" | "suporte";
+type AppSector = 
+  | "administrativo"
+  | "canais"
+  | "comercial"
+  | "compliance"
+  | "compras"
+  | "cs"
+  | "cs_meep"
+  | "cs_mee"
+  | "desenvolvimento"
+  | "eventos"
+  | "financeiro"
+  | "implantacao"
+  | "integracoes"
+  | "logistica"
+  | "marketing"
+  | "produto"
+  | "prospeccao"
+  | "rh"
+  | "suporte"
+  | "suporte_tecnico";
 
 interface Profile {
   id: string;
@@ -28,9 +48,11 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   role: AppRole | null;
+  sectors: AppSector[];
   isLoading: boolean;
   isApproved: boolean;
   isAdmin: boolean;
+  isGestor: boolean;
   isModoTV: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
@@ -199,9 +221,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     profile,
     role,
+    sectors: profile?.sector ?? [],
     isLoading,
     isApproved: profile?.is_approved ?? false,
     isAdmin: role === "admin",
+    isGestor: role === "gestor",
     isModoTV: role === "modo_tv",
     signIn,
     signUp,

@@ -13,7 +13,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Users, Mail, Phone, Sparkles, UserCheck, UserX } from "lucide-react";
+import { Search, Users, Mail, Phone, Sparkles, UserCheck, UserX, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+const SECTOR_LABEL_MAP: Record<string, string> = {
+  administrativo: "Administrativo",
+  canais: "Canais",
+  comercial: "Comercial",
+  compliance: "Compliance",
+  compras: "Compras",
+  cs: "CS",
+  cs_meep: "CS Meep",
+  cs_mee: "CS Mee",
+  desenvolvimento: "Desenvolvimento",
+  eventos: "Eventos",
+  financeiro: "Financeiro",
+  implantacao: "Implantação",
+  integracoes: "Integrações",
+  logistica: "Logística",
+  marketing: "Marketing",
+  produto: "Produto",
+  prospeccao: "Prospecção",
+  rh: "RH",
+  suporte: "Suporte",
+  suporte_tecnico: "Suporte Técnico",
+};
 
 const colaboradores: {
   id: string;
@@ -23,6 +47,7 @@ const colaboradores: {
   telefone: string;
   status: string;
   avatar: string;
+  setor: string;
 }[] = [];
 
 const statusColors: Record<string, string> = {
@@ -33,16 +58,25 @@ const statusColors: Record<string, string> = {
 
 export default function ColaboradoresSetor() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { sectors, isGestor } = useAuth();
 
-  const filteredColaboradores = colaboradores.filter((colab) =>
+  // Map sectors to department labels for filtering
+  const gestorDepartments = sectors.map(s => SECTOR_LABEL_MAP[s] || s);
+
+  // Filter colaboradores by gestor's sectors
+  const colaboradoresFiltradosPorSetor = isGestor && gestorDepartments.length > 0
+    ? colaboradores.filter((colab) => gestorDepartments.includes(colab.setor))
+    : colaboradores;
+
+  const filteredColaboradores = colaboradoresFiltradosPorSetor.filter((colab) =>
     colab.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     colab.cargo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const stats = {
-    total: colaboradores.length,
-    ativos: colaboradores.filter((c) => c.status === "ativo").length,
-    afastados: colaboradores.filter((c) => c.status === "ferias" || c.status === "afastado").length,
+    total: colaboradoresFiltradosPorSetor.length,
+    ativos: colaboradoresFiltradosPorSetor.filter((c) => c.status === "ativo").length,
+    afastados: colaboradoresFiltradosPorSetor.filter((c) => c.status === "ferias" || c.status === "afastado").length,
   };
 
   return (
@@ -66,13 +100,37 @@ export default function ColaboradoresSetor() {
               <p className="text-muted-foreground mt-1">
                 Gerencie os colaboradores da sua equipe
               </p>
+              {isGestor && gestorDepartments.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {gestorDepartments.map((dept) => (
+                    <Badge key={dept} variant="secondary" className="text-xs">
+                      {dept}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <Badge variant="outline" className="px-4 py-2 bg-primary/5 border-primary/20 text-primary text-base">
             <Users className="h-4 w-4 mr-2" />
-            {colaboradores.length} colaboradores
+            {colaboradoresFiltradosPorSetor.length} colaboradores
           </Badge>
         </div>
+
+        {/* Aviso se gestor sem setores */}
+        {isGestor && sectors.length === 0 && (
+          <Card className="border-warning/50 bg-warning/5">
+            <CardContent className="flex items-center gap-3 p-4">
+              <AlertCircle className="h-5 w-5 text-warning shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Nenhum setor atribuído</p>
+                <p className="text-xs text-muted-foreground">
+                  Solicite ao administrador que atribua setores ao seu perfil para visualizar os colaboradores.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-3">

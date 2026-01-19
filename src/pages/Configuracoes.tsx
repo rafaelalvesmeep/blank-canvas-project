@@ -586,14 +586,14 @@ export default function Configuracoes() {
 
       {/* Edit Role Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Editar Permissões</DialogTitle>
             <DialogDescription>
               Configure o nível de acesso do usuário
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 overflow-y-auto flex-1">
             <div className="p-3 bg-muted/50 rounded-lg">
               <p className="font-medium">{selectedUser?.full_name}</p>
               <p className="text-sm text-muted-foreground">{selectedUser?.email}</p>

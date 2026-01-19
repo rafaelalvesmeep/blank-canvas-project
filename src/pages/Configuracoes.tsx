@@ -47,8 +47,27 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 type AppRole = "admin" | "rh" | "gestor" | "modo_tv";
-type AppSector = "comercial" | "compliance" | "cs_meep" | "cs_mee" | "desenvolvimento" | "marketing" | "suporte";
-
+type AppSector = 
+  | "administrativo"
+  | "canais"
+  | "comercial"
+  | "compliance"
+  | "compras"
+  | "cs"
+  | "cs_meep"
+  | "cs_mee"
+  | "desenvolvimento"
+  | "eventos"
+  | "financeiro"
+  | "implantacao"
+  | "integracoes"
+  | "logistica"
+  | "marketing"
+  | "produto"
+  | "prospeccao"
+  | "rh"
+  | "suporte"
+  | "suporte_tecnico";
 interface ProfileWithRole {
   id: string;
   user_id: string;
@@ -61,13 +80,23 @@ interface ProfileWithRole {
 }
 
 const SECTORS: { value: AppSector; label: string }[] = [
+  { value: "administrativo", label: "Administrativo" },
+  { value: "canais", label: "Canais" },
   { value: "comercial", label: "Comercial" },
   { value: "compliance", label: "Compliance" },
-  { value: "cs_meep", label: "CS Meep" },
-  { value: "cs_mee", label: "CS Mee" },
+  { value: "compras", label: "Compras" },
+  { value: "cs", label: "CS" },
   { value: "desenvolvimento", label: "Desenvolvimento" },
+  { value: "eventos", label: "Eventos" },
+  { value: "financeiro", label: "Financeiro" },
+  { value: "implantacao", label: "Implantação" },
+  { value: "integracoes", label: "Integrações" },
+  { value: "logistica", label: "Logística" },
   { value: "marketing", label: "Marketing" },
-  { value: "suporte", label: "Suporte" },
+  { value: "produto", label: "Produto" },
+  { value: "prospeccao", label: "Prospecção" },
+  { value: "rh", label: "RH" },
+  { value: "suporte_tecnico", label: "Suporte Técnico" },
 ];
 
 const ROLES: { value: AppRole; label: string; description: string }[] = [

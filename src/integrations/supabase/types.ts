@@ -174,6 +174,19 @@ export type Database = {
         | "desenvolvimento"
         | "marketing"
         | "suporte"
+        | "administrativo"
+        | "canais"
+        | "compras"
+        | "cs"
+        | "eventos"
+        | "financeiro"
+        | "implantacao"
+        | "integracoes"
+        | "logistica"
+        | "produto"
+        | "prospeccao"
+        | "rh"
+        | "suporte_tecnico"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -310,6 +323,19 @@ export const Constants = {
         "desenvolvimento",
         "marketing",
         "suporte",
+        "administrativo",
+        "canais",
+        "compras",
+        "cs",
+        "eventos",
+        "financeiro",
+        "implantacao",
+        "integracoes",
+        "logistica",
+        "produto",
+        "prospeccao",
+        "rh",
+        "suporte_tecnico",
       ],
     },
   },

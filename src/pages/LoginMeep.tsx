@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, UserCog, Lock, Mail, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { meepLogin, meepValidate, MeepAuthManager } from "@/lib/meep-auth-manager";
+import logoMeep from "@/assets/logo-meep-rh.png";
 
 type Step = "credentials" | "mfa";
 
@@ -117,8 +118,8 @@ export default function LoginMeep() {
       <div className="relative w-full max-w-md animate-scale-in">
         <Card className="glass-card border-white/10">
           <CardHeader className="text-center space-y-4 pb-6 pt-10">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-glow">
-              <UserCog className="h-8 w-8 text-white" />
+            <div className="flex justify-center">
+              <img src={logoMeep} alt="Meep RH" className="h-16 object-contain" />
             </div>
             <div className="space-y-2">
               <CardTitle className="text-3xl font-bold tracking-tight">

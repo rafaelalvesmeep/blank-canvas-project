@@ -95,17 +95,8 @@ const ControleFerias = () => {
   const processVacationData = (): EmployeeVacationRow[] => {
     const employeeMap = new Map<string, EmployeeVacationRow>();
 
+    // Primeiro passo: criar entrada para todos os colaboradores únicos
     vacationRequests.forEach((request) => {
-      const startDate = parseISO(request.start_date);
-      const endDate = parseISO(request.end_date);
-      
-      const startYear = getYear(startDate);
-      const endYear = getYear(endDate);
-      
-      if (startYear !== selectedYear && endYear !== selectedYear) {
-        return;
-      }
-
       if (!employeeMap.has(request.employee_id)) {
         employeeMap.set(request.employee_id, {
           employeeId: request.employee_id,
@@ -119,6 +110,20 @@ const ControleFerias = () => {
           saldoFinal: 30,
           totalDiasUsados: 0,
         });
+      }
+    });
+
+    // Segundo passo: aplicar férias apenas do ano selecionado
+    vacationRequests.forEach((request) => {
+      const startDate = parseISO(request.start_date);
+      const endDate = parseISO(request.end_date);
+      
+      const startYear = getYear(startDate);
+      const endYear = getYear(endDate);
+      
+      // Pular se a férias não está no ano selecionado
+      if (startYear !== selectedYear && endYear !== selectedYear) {
+        return;
       }
 
       const employee = employeeMap.get(request.employee_id)!;

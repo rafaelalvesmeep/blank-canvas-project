@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getMonth, getYear, parseISO } from "date-fns";
-import { CalendarRange, Users, Palmtree, AlertCircle, Shield, Calendar } from "lucide-react";
+import { CalendarRange, Users, Palmtree, AlertCircle, Calendar } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,32 +47,49 @@ interface EmployeeVacationRow {
   totalDiasUsados: number;
 }
 
+const ALL_SECTORS = [
+  "Administrativo", "Canais", "Comercial", "Compliance", "Compras", "CS",
+  "Desenvolvimento", "Eventos", "Financeiro", "Implantação", "Integrações",
+  "Logística", "Marketing", "Produto", "Prospecção", "RH", "Suporte Técnico"
+];
+
 const ControleFerias = () => {
   const currentYear = getYear(new Date());
   const currentMonth = getMonth(new Date());
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedSector, setSelectedSector] = useState<string>("");
   const { sectors: gestorSectors, isAdmin, isGestor } = useAuth();
   
   const gestorDepartments = gestorSectors.map((s) =>
     s.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   );
 
+  // Para admins, usar o setor selecionado; para gestores, usar seus setores
+  const activeSectors = isAdmin 
+    ? (selectedSector ? [selectedSector] : []) 
+    : gestorDepartments;
+
   const { data: vacationRequests = [], isLoading } = useQuery({
-    queryKey: ["vacation-requests-control", selectedYear, gestorDepartments, isAdmin],
+    queryKey: ["vacation-requests-control", selectedYear, activeSectors, isAdmin],
     queryFn: async () => {
       let query = supabase
         .from("vacation_requests")
         .select("*")
         .eq("status", "aprovado");
 
-      if (!isAdmin && isGestor && gestorDepartments.length > 0) {
-        query = query.in("department", gestorDepartments);
+      // Filtrar por setor apenas se houver setores selecionados
+      if (activeSectors.length > 0) {
+        query = query.in("department", activeSectors);
+      } else if (isAdmin && !selectedSector) {
+        // Admin sem setor selecionado: mostrar aviso para selecionar
+        return [];
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data as VacationRequest[];
     },
+    enabled: isAdmin ? !!selectedSector : gestorDepartments.length > 0,
   });
 
   const processVacationData = (): EmployeeVacationRow[] => {
@@ -185,17 +202,29 @@ const ControleFerias = () => {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {isAdmin && (
-              <Badge variant="secondary" className="gap-1">
-                <Shield className="h-3 w-3" />
-                Admin
-              </Badge>
+            {isAdmin ? (
+              <Select
+                value={selectedSector}
+                onValueChange={setSelectedSector}
+              >
+                <SelectTrigger className="w-[180px] h-8">
+                  <SelectValue placeholder="Selecione o setor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ALL_SECTORS.map((sector) => (
+                    <SelectItem key={sector} value={sector}>
+                      {sector}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              gestorDepartments.map((dept) => (
+                <Badge key={dept} variant="outline">
+                  {dept}
+                </Badge>
+              ))
             )}
-            {!isAdmin && gestorDepartments.map((dept) => (
-              <Badge key={dept} variant="outline">
-                {dept}
-              </Badge>
-            ))}
             <Select
               value={selectedYear.toString()}
               onValueChange={(value) => setSelectedYear(parseInt(value))}
@@ -214,6 +243,16 @@ const ControleFerias = () => {
             </Select>
           </div>
         </div>
+
+        {/* Warning for admins without sector selected */}
+        {isAdmin && !selectedSector && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Selecione um setor para visualizar o controle de férias.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Warning for managers without sectors */}
         {!isAdmin && isGestor && gestorDepartments.length === 0 && (

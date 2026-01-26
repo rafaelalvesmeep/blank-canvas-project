@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      employees: {
+        Row: {
+          created_at: string
+          department: string
+          email: string
+          employee_id: string
+          hire_date: string | null
+          id: string
+          name: string
+          team_leader: string | null
+          updated_at: string
+          vacation_balance: number
+        }
+        Insert: {
+          created_at?: string
+          department: string
+          email: string
+          employee_id: string
+          hire_date?: string | null
+          id?: string
+          name: string
+          team_leader?: string | null
+          updated_at?: string
+          vacation_balance?: number
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          email?: string
+          employee_id?: string
+          hire_date?: string | null
+          id?: string
+          name?: string
+          team_leader?: string | null
+          updated_at?: string
+          vacation_balance?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -92,6 +131,36 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vacation_credits: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          credit_days: number
+          employee_id: string
+          id: string
+          reason: string | null
+          reference_year: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          credit_days: number
+          employee_id: string
+          id?: string
+          reason?: string | null
+          reference_year: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          credit_days?: number
+          employee_id?: string
+          id?: string
+          reason?: string | null
+          reference_year?: number
         }
         Relationships: []
       }

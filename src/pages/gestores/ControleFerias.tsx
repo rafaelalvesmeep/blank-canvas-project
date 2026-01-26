@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getMonth, getYear, parseISO } from "date-fns";
-import { CalendarRange, Users, Palmtree, AlertCircle, Calendar } from "lucide-react";
+import { CalendarRange, Users, Palmtree, AlertCircle, Calendar, Plus, CreditCard, UserPlus } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { RegisterEmployeeDialog } from "@/components/gestores/RegisterEmployeeDialog";
+import { RegisterVacationDialog } from "@/components/gestores/RegisterVacationDialog";
+import { RegisterCreditDialog } from "@/components/gestores/RegisterCreditDialog";
 
 const MONTH_NAMES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
@@ -25,6 +29,16 @@ interface VacationRequest {
   days_count: number;
   status: string;
   approved_by: string | null;
+}
+
+interface Employee {
+  id: string;
+  employee_id: string;
+  name: string;
+  email: string;
+  department: string;
+  team_leader: string | null;
+  vacation_balance: number;
 }
 
 interface MonthVacation {
@@ -58,18 +72,42 @@ const ControleFerias = () => {
   const currentMonth = getMonth(new Date());
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedSector, setSelectedSector] = useState<string>("");
-  const { sectors: gestorSectors, isAdmin, isGestor } = useAuth();
+  const { sectors: gestorSectors, isAdmin, isGestor, profile } = useAuth();
+  
+  // Dialogs state
+  const [showEmployeeDialog, setShowEmployeeDialog] = useState(false);
+  const [showVacationDialog, setShowVacationDialog] = useState(false);
+  const [showCreditDialog, setShowCreditDialog] = useState(false);
   
   const gestorDepartments = gestorSectors.map((s) =>
     s.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   );
 
-  // Para admins, usar o setor selecionado; para gestores, usar seus setores
   const activeSectors = isAdmin 
     ? (selectedSector ? [selectedSector] : []) 
     : gestorDepartments;
 
-  const { data: vacationRequests = [], isLoading } = useQuery({
+  // Fetch employees from the new employees table
+  const { data: employees = [], isLoading: isLoadingEmployees } = useQuery({
+    queryKey: ["employees", activeSectors, isAdmin],
+    queryFn: async () => {
+      let query = supabase.from("employees").select("*");
+
+      if (activeSectors.length > 0) {
+        query = query.in("department", activeSectors);
+      } else if (isAdmin && !selectedSector) {
+        return [];
+      }
+
+      const { data, error } = await query.order("name");
+      if (error) throw error;
+      return data as Employee[];
+    },
+    enabled: isAdmin ? !!selectedSector : gestorDepartments.length > 0,
+  });
+
+  // Fetch vacation requests
+  const { data: vacationRequests = [], isLoading: isLoadingVacations } = useQuery({
     queryKey: ["vacation-requests-control", selectedYear, activeSectors, isAdmin],
     queryFn: async () => {
       let query = supabase
@@ -77,11 +115,9 @@ const ControleFerias = () => {
         .select("*")
         .eq("status", "aprovada");
 
-      // Filtrar por setor apenas se houver setores selecionados
       if (activeSectors.length > 0) {
         query = query.in("department", activeSectors);
       } else if (isAdmin && !selectedSector) {
-        // Admin sem setor selecionado: mostrar aviso para selecionar
         return [];
       }
 
@@ -92,13 +128,44 @@ const ControleFerias = () => {
     enabled: isAdmin ? !!selectedSector : gestorDepartments.length > 0,
   });
 
+  const isLoading = isLoadingEmployees || isLoadingVacations;
+
   const processVacationData = (): EmployeeVacationRow[] => {
     const employeeMap = new Map<string, EmployeeVacationRow>();
 
-    // Primeiro passo: criar entrada para todos os colaboradores únicos
+    // Step 1: Create entry for all employees from the employees table
+    employees.forEach((emp) => {
+      employeeMap.set(emp.employee_id, {
+        employeeId: emp.employee_id,
+        employeeName: emp.name,
+        department: emp.department,
+        status: "Ativo",
+        vencimento: "-",
+        saldoInicio: emp.vacation_balance,
+        teamLeader: emp.team_leader || "-",
+        meses: Array(12).fill(null).map(() => ({ type: "vazio" as const })),
+        saldoFinal: emp.vacation_balance,
+        totalDiasUsados: 0,
+      });
+    });
+
+    // Step 2: Apply vacation periods from vacation_requests for the selected year
     vacationRequests.forEach((request) => {
-      if (!employeeMap.has(request.employee_id)) {
-        employeeMap.set(request.employee_id, {
+      const startDate = parseISO(request.start_date);
+      const endDate = parseISO(request.end_date);
+      
+      const startYear = getYear(startDate);
+      const endYear = getYear(endDate);
+      
+      // Skip if vacation is not in the selected year
+      if (startYear !== selectedYear && endYear !== selectedYear) {
+        return;
+      }
+
+      // Get or create employee entry (for employees that exist only in vacation_requests)
+      let employee = employeeMap.get(request.employee_id);
+      if (!employee) {
+        employee = {
           employeeId: request.employee_id,
           employeeName: request.employee_name,
           department: request.department,
@@ -109,24 +176,10 @@ const ControleFerias = () => {
           meses: Array(12).fill(null).map(() => ({ type: "vazio" as const })),
           saldoFinal: 30,
           totalDiasUsados: 0,
-        });
-      }
-    });
-
-    // Segundo passo: aplicar férias apenas do ano selecionado
-    vacationRequests.forEach((request) => {
-      const startDate = parseISO(request.start_date);
-      const endDate = parseISO(request.end_date);
-      
-      const startYear = getYear(startDate);
-      const endYear = getYear(endDate);
-      
-      // Pular se a férias não está no ano selecionado
-      if (startYear !== selectedYear && endYear !== selectedYear) {
-        return;
+        };
+        employeeMap.set(request.employee_id, employee);
       }
 
-      const employee = employeeMap.get(request.employee_id)!;
       employee.totalDiasUsados += request.days_count;
       
       const startMonth = getMonth(startDate);
@@ -193,6 +246,14 @@ const ControleFerias = () => {
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 
+  // Prepare employee list for dialogs
+  const employeesForDialog = employees.map((e) => ({
+    employee_id: e.employee_id,
+    name: e.name,
+    email: e.email,
+    department: e.department,
+  }));
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8 space-y-6">
@@ -248,6 +309,24 @@ const ControleFerias = () => {
             </Select>
           </div>
         </div>
+
+        {/* Action Buttons */}
+        {(isAdmin || (selectedSector || gestorDepartments.length > 0)) && (
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" onClick={() => setShowEmployeeDialog(true)}>
+              <UserPlus className="h-4 w-4 mr-1.5" />
+              Cadastrar Colaborador
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowVacationDialog(true)} disabled={employees.length === 0}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              Cadastrar Férias
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowCreditDialog(true)} disabled={employees.length === 0}>
+              <CreditCard className="h-4 w-4 mr-1.5" />
+              Cadastrar Crédito
+            </Button>
+          </div>
+        )}
 
         {/* Warning for admins without sector selected */}
         {isAdmin && !selectedSector && (
@@ -360,8 +439,12 @@ const ControleFerias = () => {
                   <TableRow>
                     <TableCell colSpan={16} className="text-center py-12">
                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <CalendarRange className="h-8 w-8 opacity-40" />
-                        <p>Nenhum registro de férias encontrado para {selectedYear}</p>
+                        <Users className="h-8 w-8 opacity-40" />
+                        <p>Nenhum colaborador cadastrado</p>
+                        <Button size="sm" variant="outline" onClick={() => setShowEmployeeDialog(true)}>
+                          <UserPlus className="h-4 w-4 mr-1.5" />
+                          Cadastrar primeiro colaborador
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -430,6 +513,26 @@ const ControleFerias = () => {
           </div>
         )}
       </div>
+
+      {/* Dialogs */}
+      <RegisterEmployeeDialog
+        open={showEmployeeDialog}
+        onOpenChange={setShowEmployeeDialog}
+        defaultSector={selectedSector || gestorDepartments[0]}
+      />
+      <RegisterVacationDialog
+        open={showVacationDialog}
+        onOpenChange={setShowVacationDialog}
+        employees={employeesForDialog}
+        approverName={profile?.full_name || "Sistema"}
+      />
+      <RegisterCreditDialog
+        open={showCreditDialog}
+        onOpenChange={setShowCreditDialog}
+        employees={employeesForDialog}
+        currentYear={selectedYear}
+        createdBy={profile?.full_name || "Sistema"}
+      />
     </MainLayout>
   );
 };

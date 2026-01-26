@@ -75,7 +75,7 @@ const ControleFerias = () => {
       let query = supabase
         .from("vacation_requests")
         .select("*")
-        .eq("status", "aprovado");
+        .eq("status", "aprovada");
 
       // Filtrar por setor apenas se houver setores selecionados
       if (activeSectors.length > 0) {

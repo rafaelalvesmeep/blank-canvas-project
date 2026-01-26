@@ -20,6 +20,7 @@ import ColaboradoresSetor from "./pages/gestores/ColaboradoresSetor";
 import SolicitacaoVaga from "./pages/gestores/SolicitacaoVaga";
 import SolicitacaoFerias from "./pages/gestores/SolicitacaoFerias";
 import Avaliacoes from "./pages/gestores/Avaliacoes";
+import ControleFerias from "./pages/gestores/ControleFerias";
 import IntegracaoFerias from "./pages/docs/IntegracaoFerias";
 
 const ModoTV = lazy(() => import("./pages/ModoTV"));
@@ -107,6 +108,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Avaliacoes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/gestores/controle-ferias"
+              element={
+                <ProtectedRoute>
+                  <ControleFerias />
                 </ProtectedRoute>
               }
             />

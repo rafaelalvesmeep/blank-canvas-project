@@ -18,6 +18,7 @@ import {
   FileText,
   CalendarPlus,
   Star,
+  CalendarRange,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ export function AppSidebar() {
         { title: "Colaboradores do Setor", url: "/gestores/colaboradores", icon: UsersRound },
         { title: "Solicitação de Vaga", url: "/gestores/solicitacao-vaga", icon: FileText },
         { title: "Solicitação de Férias", url: "/gestores/solicitacao-ferias", icon: CalendarPlus },
+        { title: "Controle de Férias", url: "/gestores/controle-ferias", icon: CalendarRange },
         { title: "Avaliações", url: "/gestores/avaliacoes", icon: Star },
       ]
     },

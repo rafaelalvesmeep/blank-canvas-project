@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getMonth, getYear, parseISO } from "date-fns";
-import { CalendarRange, Users, Palmtree, AlertCircle, Calendar, Plus, CreditCard, UserPlus } from "lucide-react";
+import { CalendarRange, Users, Palmtree, AlertCircle, Calendar, Plus, CreditCard } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { RegisterEmployeeDialog } from "@/components/gestores/RegisterEmployeeDialog";
 import { RegisterVacationDialog } from "@/components/gestores/RegisterVacationDialog";
 import { RegisterCreditDialog } from "@/components/gestores/RegisterCreditDialog";
 
@@ -75,7 +74,6 @@ const ControleFerias = () => {
   const { sectors: gestorSectors, isAdmin, isGestor, profile } = useAuth();
   
   // Dialogs state
-  const [showEmployeeDialog, setShowEmployeeDialog] = useState(false);
   const [showVacationDialog, setShowVacationDialog] = useState(false);
   const [showCreditDialog, setShowCreditDialog] = useState(false);
   
@@ -313,10 +311,6 @@ const ControleFerias = () => {
         {/* Action Buttons */}
         {(isAdmin || (selectedSector || gestorDepartments.length > 0)) && (
           <div className="flex gap-2 flex-wrap">
-            <Button size="sm" onClick={() => setShowEmployeeDialog(true)}>
-              <UserPlus className="h-4 w-4 mr-1.5" />
-              Cadastrar Colaborador
-            </Button>
             <Button size="sm" variant="outline" onClick={() => setShowVacationDialog(true)} disabled={employees.length === 0}>
               <Plus className="h-4 w-4 mr-1.5" />
               Cadastrar Férias
@@ -440,11 +434,8 @@ const ControleFerias = () => {
                     <TableCell colSpan={16} className="text-center py-12">
                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <Users className="h-8 w-8 opacity-40" />
-                        <p>Nenhum colaborador cadastrado</p>
-                        <Button size="sm" variant="outline" onClick={() => setShowEmployeeDialog(true)}>
-                          <UserPlus className="h-4 w-4 mr-1.5" />
-                          Cadastrar primeiro colaborador
-                        </Button>
+                        <p>Nenhum colaborador encontrado neste setor</p>
+                        <p className="text-xs">Os colaboradores são inseridos via API</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -515,11 +506,6 @@ const ControleFerias = () => {
       </div>
 
       {/* Dialogs */}
-      <RegisterEmployeeDialog
-        open={showEmployeeDialog}
-        onOpenChange={setShowEmployeeDialog}
-        defaultSector={selectedSector || gestorDepartments[0]}
-      />
       <RegisterVacationDialog
         open={showVacationDialog}
         onOpenChange={setShowVacationDialog}

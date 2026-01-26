@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getMonth, getYear, parseISO } from "date-fns";
-import { AlertCircle, Shield, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarRange, Users, Palmtree, AlertCircle, Shield, Calendar } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
 
 const MONTH_NAMES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
@@ -28,9 +29,9 @@ interface VacationRequest {
 
 interface MonthVacation {
   type: "ferias" | "vazio";
+  label?: string;
   startDay?: number;
   endDay?: number;
-  daysCount?: number;
 }
 
 interface EmployeeVacationRow {
@@ -38,6 +39,7 @@ interface EmployeeVacationRow {
   employeeName: string;
   department: string;
   status: "Ativo" | "Férias";
+  vencimento: string;
   saldoInicio: number;
   teamLeader: string;
   meses: MonthVacation[];
@@ -93,6 +95,7 @@ const ControleFerias = () => {
           employeeName: request.employee_name,
           department: request.department,
           status: "Ativo",
+          vencimento: "-",
           saldoInicio: 30,
           teamLeader: request.approved_by || "-",
           meses: Array(12).fill(null).map(() => ({ type: "vazio" as const })),
@@ -117,9 +120,9 @@ const ControleFerias = () => {
           
           employee.meses[month] = {
             type: "ferias",
+            label: `férias`,
             startDay,
             endDay,
-            daysCount: endDay - startDay + 1,
           };
         }
       }
@@ -141,64 +144,78 @@ const ControleFerias = () => {
 
   const employeeRows = processVacationData();
 
-  const renderMonthCell = (monthData: MonthVacation) => {
+  const totalEmployees = employeeRows.length;
+  const employeesOnVacation = employeeRows.filter((e) => e.status === "Férias").length;
+  const totalDaysUsed = employeeRows.reduce((sum, e) => sum + e.totalDiasUsados, 0);
+
+  const renderMonthCell = (monthData: MonthVacation, monthIndex: number) => {
+    const isCurrentMonth = selectedYear === currentYear && monthIndex === currentMonth;
+    
     if (monthData.type === "vazio") {
-      return <span className="text-muted-foreground/30">—</span>;
+      return (
+        <div className={`h-10 flex items-center justify-center ${isCurrentMonth ? "bg-muted/50 rounded" : ""}`}>
+          <span className="text-muted-foreground/40">—</span>
+        </div>
+      );
     }
 
     return (
-      <div className="bg-green-500 text-white text-[10px] leading-tight px-1.5 py-1 rounded text-center font-medium min-w-[60px]">
-        <div>férias</div>
-        <div className="opacity-90">({monthData.startDay?.toString().padStart(2, "0")} a {monthData.endDay?.toString().padStart(2, "0")})</div>
+      <div className="bg-primary text-primary-foreground text-[10px] leading-tight px-2 py-1.5 rounded-md text-center font-medium shadow-sm">
+        <div>Férias</div>
+        <div className="opacity-80">
+          {monthData.startDay?.toString().padStart(2, "0")}-{monthData.endDay?.toString().padStart(2, "0")}
+        </div>
       </div>
     );
   };
 
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+
   return (
     <MainLayout>
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold">Controle de Férias</h1>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Controle de Férias
+            </h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Acompanhe as férias dos colaboradores ao longo do ano
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
             {isAdmin && (
-              <Badge variant="secondary" className="gap-1 text-xs">
+              <Badge variant="secondary" className="gap-1">
                 <Shield className="h-3 w-3" />
                 Admin
               </Badge>
             )}
             {!isAdmin && gestorDepartments.map((dept) => (
-              <Badge key={dept} variant="outline" className="text-xs">
+              <Badge key={dept} variant="outline">
                 {dept}
               </Badge>
             ))}
-          </div>
-          
-          {/* Year Selector */}
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setSelectedYear(selectedYear - 1)}
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={(value) => setSelectedYear(parseInt(value))}
             >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-medium px-3 min-w-[60px] text-center">
-              {selectedYear}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setSelectedYear(selectedYear + 1)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+              <SelectTrigger className="w-[100px] h-8">
+                <Calendar className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Warning */}
+        {/* Warning for managers without sectors */}
         {!isAdmin && isGestor && gestorDepartments.length === 0 && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -208,126 +225,163 @@ const ControleFerias = () => {
           </Alert>
         )}
 
-        {/* Table Container */}
-        <div className="border rounded-lg bg-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="sticky left-0 bg-muted/50 z-10 text-left py-3 px-4 font-medium min-w-[180px]">
-                    Nome
-                  </th>
-                  <th className="text-left py-3 px-3 font-medium min-w-[70px]">Status</th>
-                  <th className="text-center py-3 px-2 font-medium min-w-[50px]">Venc.</th>
-                  <th className="text-center py-3 px-2 font-medium min-w-[60px]">Saldo Início</th>
-                  <th className="text-left py-3 px-3 font-medium min-w-[100px]">Team Leader</th>
-                  {MONTH_NAMES.map((month, index) => (
-                    <th 
-                      key={month} 
-                      className={cn(
-                        "text-center py-3 px-1 font-medium min-w-[70px]",
-                        selectedYear === currentYear && index === currentMonth && "bg-primary/10 text-primary"
-                      )}
-                    >
-                      {month}
-                    </th>
-                  ))}
-                  <th className="text-center py-3 px-2 font-medium min-w-[70px]">Saldo Final</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  Array.from({ length: 6 }).map((_, i) => (
-                    <tr key={i} className="border-b">
-                      <td className="sticky left-0 bg-card z-10 py-3 px-4">
-                        <Skeleton className="h-4 w-28" />
-                      </td>
-                      <td className="py-3 px-3"><Skeleton className="h-5 w-12" /></td>
-                      <td className="py-3 px-2"><Skeleton className="h-4 w-8 mx-auto" /></td>
-                      <td className="py-3 px-2"><Skeleton className="h-4 w-6 mx-auto" /></td>
-                      <td className="py-3 px-3"><Skeleton className="h-4 w-20" /></td>
-                      {Array.from({ length: 12 }).map((_, j) => (
-                        <td key={j} className="py-3 px-1"><Skeleton className="h-6 w-14 mx-auto" /></td>
-                      ))}
-                      <td className="py-3 px-2"><Skeleton className="h-4 w-6 mx-auto" /></td>
-                    </tr>
-                  ))
-                ) : employeeRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={18} className="text-center py-16 text-muted-foreground">
-                      Nenhum registro de férias encontrado para {selectedYear}
-                    </td>
-                  </tr>
-                ) : (
-                  employeeRows.map((employee, rowIndex) => (
-                    <tr 
-                      key={employee.employeeId} 
-                      className={cn(
-                        "border-b last:border-0 hover:bg-muted/30 transition-colors",
-                        rowIndex % 2 === 0 ? "bg-card" : "bg-muted/10"
-                      )}
-                    >
-                      <td className={cn(
-                        "sticky left-0 z-10 py-2.5 px-4 font-medium",
-                        rowIndex % 2 === 0 ? "bg-card" : "bg-muted/10"
-                      )}>
-                        {employee.employeeName}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className={cn(
-                          "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-                          employee.status === "Férias" 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-gray-100 text-gray-600"
-                        )}>
-                          {employee.status}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-2 text-center text-muted-foreground">—</td>
-                      <td className="py-2.5 px-2 text-center">{employee.saldoInicio}</td>
-                      <td className="py-2.5 px-3 text-muted-foreground text-xs truncate max-w-[100px]">
-                        {employee.teamLeader}
-                      </td>
-                      {employee.meses.map((mes, index) => (
-                        <td 
-                          key={index} 
-                          className={cn(
-                            "py-2 px-1 text-center",
-                            selectedYear === currentYear && index === currentMonth && "bg-primary/5"
-                          )}
-                        >
-                          {renderMonthCell(mes)}
-                        </td>
-                      ))}
-                      <td className="py-2.5 px-2 text-center font-semibold">
-                        <span className={cn(
-                          employee.saldoFinal < 0 && "text-red-500",
-                          employee.saldoFinal > 0 && employee.saldoFinal < 10 && "text-orange-500"
-                        )}>
-                          {employee.saldoFinal}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        {/* Stats Cards - Compact */}
+        <div className="grid gap-3 grid-cols-3">
+          <Card className="border-0 shadow-sm bg-muted/30">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-background">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{totalEmployees}</p>
+                  <p className="text-xs text-muted-foreground">Colaboradores</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm bg-muted/30">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-background">
+                  <Palmtree className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{employeesOnVacation}</p>
+                  <p className="text-xs text-muted-foreground">Em férias</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm bg-muted/30">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-background">
+                  <CalendarRange className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold">{totalDaysUsed}</p>
+                  <p className="text-xs text-muted-foreground">Dias usados</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Footer Legend */}
+        {/* Table */}
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                  <TableHead className="sticky left-0 bg-muted/30 z-10 min-w-[200px] font-semibold">
+                    Colaborador
+                  </TableHead>
+                  <TableHead className="min-w-[80px] text-center font-semibold">Status</TableHead>
+                  <TableHead className="min-w-[70px] text-center font-semibold">Saldo</TableHead>
+                  {MONTH_NAMES.map((month, index) => (
+                    <TableHead 
+                      key={month} 
+                      className={`min-w-[80px] text-center font-semibold ${
+                        selectedYear === currentYear && index === currentMonth 
+                          ? "bg-primary/10 text-primary" 
+                          : ""
+                      }`}
+                    >
+                      {month}
+                    </TableHead>
+                  ))}
+                  <TableHead className="min-w-[70px] text-center font-semibold">Restante</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="sticky left-0 bg-background z-10">
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-20" />
+                        </div>
+                      </TableCell>
+                      <TableCell><Skeleton className="h-5 w-14 mx-auto" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-8 mx-auto" /></TableCell>
+                      {Array.from({ length: 12 }).map((_, j) => (
+                        <TableCell key={j}><Skeleton className="h-8 w-14 mx-auto" /></TableCell>
+                      ))}
+                      <TableCell><Skeleton className="h-4 w-8 mx-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : employeeRows.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={16} className="text-center py-12">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <CalendarRange className="h-8 w-8 opacity-40" />
+                        <p>Nenhum registro de férias encontrado para {selectedYear}</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  employeeRows.map((employee) => (
+                    <TableRow key={employee.employeeId} className="group">
+                      <TableCell className="sticky left-0 bg-background z-10 group-hover:bg-muted/50 transition-colors">
+                        <div>
+                          <div className="font-medium">{employee.employeeName}</div>
+                          <div className="text-xs text-muted-foreground">{employee.department}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          variant={employee.status === "Férias" ? "default" : "outline"}
+                          className={employee.status === "Férias" ? "bg-primary" : ""}
+                        >
+                          {employee.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center font-medium text-muted-foreground">
+                        {employee.saldoInicio}d
+                      </TableCell>
+                      {employee.meses.map((mes, index) => (
+                        <TableCell 
+                          key={index} 
+                          className={`text-center p-1.5 ${
+                            selectedYear === currentYear && index === currentMonth 
+                              ? "bg-primary/5" 
+                              : ""
+                          }`}
+                        >
+                          {renderMonthCell(mes, index)}
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-center">
+                        <span className={`font-semibold ${
+                          employee.saldoFinal < 0 
+                            ? "text-destructive" 
+                            : employee.saldoFinal < 10 
+                              ? "text-orange-500" 
+                              : "text-foreground"
+                        }`}>
+                          {employee.saldoFinal}d
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+
+        {/* Legend */}
         {employeeRows.length > 0 && (
-          <div className="flex items-center gap-6 text-xs text-muted-foreground pt-2">
+          <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-green-500" />
-              <span>Férias aprovadas</span>
+              <div className="w-4 h-4 rounded bg-primary" />
+              <span>Período de férias</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-primary/20 border" />
+              <div className="w-4 h-4 rounded bg-primary/10 border border-primary/20" />
               <span>Mês atual</span>
-            </div>
-            <div className="ml-auto text-muted-foreground">
-              {employeeRows.length} colaborador{employeeRows.length !== 1 && "es"} • {employeeRows.filter(e => e.status === "Férias").length} em férias
             </div>
           </div>
         )}

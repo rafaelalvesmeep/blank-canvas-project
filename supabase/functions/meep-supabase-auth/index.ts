@@ -73,6 +73,100 @@ Deno.serve(async (req) => {
 
     // User not registered in the local system
     if (!profile) {
+      // Auto-create specific whitelisted users
+      const AUTO_APPROVE_EMAILS = ['deivid.castilho@meep.com.br'];
+      
+      if (AUTO_APPROVE_EMAILS.includes(email)) {
+        console.log(`Auto-creating approved user: ${email}`);
+        
+        // Check if auth user exists
+        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+        let userId = existingUsers?.users?.find(u => u.email === email)?.id;
+        
+        // Create auth user if doesn't exist
+        if (!userId) {
+          const { data: newUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
+            email: email,
+            email_confirm: true,
+            user_metadata: { full_name: 'Deivid Castilho' }
+          });
+          
+          if (createUserError) {
+            console.error('Error creating user:', createUserError);
+            return new Response(
+              JSON.stringify({ error: 'Erro ao criar usuário' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          userId = newUser.user.id;
+        }
+        
+        // Create profile
+        const { error: profileInsertError } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            user_id: userId,
+            email: email,
+            full_name: 'Deivid Castilho',
+            is_approved: true,
+          });
+        
+        if (profileInsertError && !profileInsertError.message.includes('duplicate')) {
+          console.error('Error creating profile:', profileInsertError);
+        }
+        
+        // Create admin role
+        const { error: roleError } = await supabaseAdmin
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: 'admin',
+          });
+        
+        if (roleError && !roleError.message.includes('duplicate')) {
+          console.error('Error creating role:', roleError);
+        }
+        
+        console.log('Auto-created user with admin role, generating magic link');
+        
+        // Generate magic link for the new user
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+          type: 'magiclink',
+          email: email,
+        });
+        
+        if (linkError) {
+          console.error('Error generating magic link:', linkError);
+          return new Response(
+            JSON.stringify({ error: 'Erro ao gerar link de autenticação' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        const actionLink = linkData.properties?.action_link;
+        const url = new URL(actionLink);
+        const token = url.searchParams.get('token');
+        const type = url.searchParams.get('type');
+        
+        // Fetch the new profile
+        const { data: newProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('*')
+          .eq('email', email)
+          .single();
+        
+        return new Response(
+          JSON.stringify({
+            status: 'authenticated',
+            actionLink,
+            token,
+            type,
+            profile: newProfile,
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       console.log('User not registered in local system');
       return new Response(
         JSON.stringify({

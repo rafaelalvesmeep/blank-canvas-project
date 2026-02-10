@@ -1,89 +1,77 @@
 
 
 ## Resumo
-Remover o botão "Cadastrar Colaborador" da interface (pois os colaboradores serão inseridos via API) e inserir os 27 colaboradores do setor Desenvolvimento no banco de dados.
+Adicionar um modal (Dialog) que abre ao clicar em uma linha da tabela de solicitações de férias, exibindo todos os dados detalhados da solicitação, incluindo observações.
 
 ---
 
-## Alterações na Interface
+## Alterações
 
-**Arquivo:** `src/pages/gestores/ControleFerias.tsx`
+**Arquivo:** `src/pages/gestores/SolicitacaoFerias.tsx`
 
-**Remover o botão "Cadastrar Colaborador":**
-- Remover o botão das linhas 316-319 (seção de Action Buttons)
-- Remover o botão das linhas 444-447 (estado vazio da tabela)
-- Manter apenas os botões "Cadastrar Férias" e "Cadastrar Crédito"
-- Remover o import do `RegisterEmployeeDialog` e o estado `showEmployeeDialog` se não for mais usado
-- Remover o ícone `UserPlus` dos imports se não for mais utilizado
+1. **Adicionar estado para controlar o modal e a solicitação selecionada:**
+   - `selectedSolicitacao` para armazenar a solicitação clicada
+   - O Dialog abre quando `selectedSolicitacao` nao for null
 
-**Ajustar estado vazio:**
-- Quando não houver colaboradores, exibir apenas mensagem informativa sem o botão de cadastrar
+2. **Tornar as linhas da tabela clicaveis:**
+   - Adicionar `cursor-pointer` e `onClick` em cada `TableRow` para abrir o modal com os dados daquela solicitacao
 
----
-
-## Inserção dos Colaboradores
-
-**Tabela:** `employees`
-
-Inserir 27 registros com os seguintes dados:
-
-| Nome | department | vacation_balance |
-|------|------------|------------------|
-| ALEXSANDRO ALVES CRISPIM | Desenvolvimento | 30 |
-| DANIEL LUCAS PEREIRA E SILVA | Desenvolvimento | 30 |
-| DEIVID AUGUSTO CASTILHO | Desenvolvimento | 30 |
-| DOUGLAS LELLIS MOREIRA | Desenvolvimento | 30 |
-| FERNANDO D'ANGELO MACHADO | Desenvolvimento | 30 |
-| FLAVIA PRATES | Desenvolvimento | 30 |
-| GUILHERME GOMES | Desenvolvimento | 30 |
-| ISAAC HOUSTON PEREIRA | Desenvolvimento | 30 |
-| ISAAC NASCIMENTO | Desenvolvimento | 30 |
-| ISABELA MONIQUE ALCANTARA | Desenvolvimento | 30 |
-| JOAO PAULO LISBOA DOS SANTOS | Desenvolvimento | 30 |
-| JOSEMAR DE LUNA SANTOS SOUSA | Desenvolvimento | 30 |
-| LUCAS GUILHERME CAETANO | Desenvolvimento | 30 |
-| LUIS GUSTAVO DE SOUZA | Desenvolvimento | 30 |
-| MARCOS PEREIRA BENEVIDES | Desenvolvimento | 30 |
-| MATHEUS MIRANDA | Desenvolvimento | 30 |
-| OSCAR OLIVEIRA DIAS | Desenvolvimento | 30 |
-| PAULO HENRIQUE MONTE | Desenvolvimento | 30 |
-| PAULO RENATO DE SOUZA | Desenvolvimento | 30 |
-| PITER SILVA | Desenvolvimento | 30 |
-| RAMON RODRIGUES | Desenvolvimento | 30 |
-| RAPHAEL CHRISTIAN MODESTO | Desenvolvimento | 30 |
-| RAUL LOPES DE SOUZA | Desenvolvimento | 30 |
-| RAYANE SANTIAGO | Desenvolvimento | 30 |
-| THIAGO JOSE OLIVEIRA E SILVA | Desenvolvimento | 30 |
-| THIAGO NASCIMENTO PEREIRA | Desenvolvimento | 30 |
-| UIRA ASSUNÇÃO ALVES PEREIRA | Desenvolvimento | 30 |
-
-Para cada colaborador será gerado:
-- `employee_id`: baseado no nome normalizado (ex: `alexsandro.alves.crispim`)
-- `email`: `{employee_id}@meep.com.br`
+3. **Criar o Dialog com todos os dados:**
+   - Nome do colaborador
+   - Email
+   - Setor/Departamento
+   - Periodo (data inicio - data fim)
+   - Quantidade de dias
+   - Data da solicitacao
+   - Status (com icone e badge colorido)
+   - Aprovado por (se houver)
+   - Observacoes/Notas (campo `notes`)
+   - ID externo (`external_id`)
+   - Botoes de Aprovar/Reprovar (se status pendente)
 
 ---
 
-## Detalhes Técnicos
+## Detalhes Tecnicos
 
-**Limpeza de código:**
+**Imports adicionais:**
+- `Dialog, DialogContent, DialogHeader, DialogTitle` de `@/components/ui/dialog`
+- `Separator` de `@/components/ui/separator`
+- `useState` do React
+
+**Estado:**
 ```text
-- Remover: import { RegisterEmployeeDialog }
-- Remover: const [showEmployeeDialog, setShowEmployeeDialog] = useState(false)
-- Remover: import UserPlus (se não usado em outro lugar)
-- Remover: <RegisterEmployeeDialog ... /> do JSX
+const [selectedSolicitacao, setSelectedSolicitacao] = useState<any | null>(null);
 ```
 
-**Estrutura final dos botões de ação:**
+**TableRow clicavel:**
 ```text
-<div className="flex gap-2 flex-wrap">
-  <Button size="sm" variant="outline" onClick={() => setShowVacationDialog(true)} disabled={employees.length === 0}>
-    <Plus className="h-4 w-4 mr-1.5" />
-    Cadastrar Férias
-  </Button>
-  <Button size="sm" variant="outline" onClick={() => setShowCreditDialog(true)} disabled={employees.length === 0}>
-    <CreditCard className="h-4 w-4 mr-1.5" />
-    Cadastrar Crédito
-  </Button>
-</div>
+<TableRow 
+  key={sol.id} 
+  className="group cursor-pointer hover:bg-muted/50"
+  onClick={() => setSelectedSolicitacao(sol)}
+>
 ```
+
+**Estrutura do Dialog:**
+```text
+<Dialog open={!!selectedSolicitacao} onOpenChange={(open) => !open && setSelectedSolicitacao(null)}>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle>Detalhes da Solicitacao</DialogTitle>
+    </DialogHeader>
+    - Secao com nome, email, setor
+    - Separator
+    - Secao com periodo, dias, data solicitacao
+    - Separator
+    - Secao com status e aprovado por
+    - Separator
+    - Secao com observacoes (notes)
+    - Separator
+    - Secao com ID externo
+    - Botoes de acao (se pendente)
+  </DialogContent>
+</Dialog>
+```
+
+Os botoes de aprovar/reprovar dentro do modal fecharao o modal apos a acao, chamando `setSelectedSolicitacao(null)` no callback de sucesso da mutation.
 

@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { RegisterVacationDialog } from "@/components/gestores/RegisterVacationDialog";
 import { RegisterCreditDialog } from "@/components/gestores/RegisterCreditDialog";
 import { EditVacationPopover } from "@/components/gestores/EditVacationPopover";
+import { EditBalancePopover } from "@/components/gestores/EditBalancePopover";
 
 const MONTH_NAMES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
@@ -519,8 +520,11 @@ const ControleFerias = () => {
                           {employee.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-center font-medium text-muted-foreground">
-                        {employee.saldoInicio}d
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-0.5">
+                          <span className="font-medium text-muted-foreground">{employee.saldoInicio}d</span>
+                          <EditBalancePopover employeeId={employee.employeeId} currentBalance={employee.saldoInicio} />
+                        </div>
                       </TableCell>
                       {employee.meses.map((mes, index) => (
                         <TableCell 

@@ -79,6 +79,42 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Resolve department: if it looks like a UUID, try to find the employee's department name
+    let resolvedDepartment = payload.employee.department;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(resolvedDepartment)) {
+      console.log(`Department is a UUID (${resolvedDepartment}), attempting to resolve name...`);
+      
+      // Try to find employee by name in our employees table
+      const employeeName = payload.employee.name.toUpperCase();
+      const { data: empMatch } = await supabase
+        .from("employees")
+        .select("department")
+        .ilike("name", `%${employeeName}%`)
+        .limit(1)
+        .maybeSingle();
+      
+      if (empMatch?.department) {
+        resolvedDepartment = empMatch.department;
+        console.log(`Resolved department to: ${resolvedDepartment}`);
+      } else {
+        // Try by email domain prefix
+        const { data: empByEmail } = await supabase
+          .from("employees")
+          .select("department")
+          .ilike("email", `%${payload.employee.email.split("@")[0]}%`)
+          .limit(1)
+          .maybeSingle();
+        
+        if (empByEmail?.department) {
+          resolvedDepartment = empByEmail.department;
+          console.log(`Resolved department by email to: ${resolvedDepartment}`);
+        } else {
+          console.warn(`Could not resolve UUID department ${resolvedDepartment} for employee ${payload.employee.name}. Keeping UUID.`);
+        }
+      }
+    }
+
     // Check for duplicate external_id
     const { data: existing } = await supabase
       .from("vacation_requests")
@@ -105,7 +141,7 @@ Deno.serve(async (req) => {
         employee_id: payload.employee.id,
         employee_name: payload.employee.name,
         employee_email: payload.employee.email,
-        department: payload.employee.department,
+        department: resolvedDepartment,
         start_date: payload.vacation.start_date,
         end_date: payload.vacation.end_date,
         days_count: payload.vacation.days_count,

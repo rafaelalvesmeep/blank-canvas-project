@@ -1,77 +1,63 @@
 
 
-## Resumo
-Adicionar um modal (Dialog) que abre ao clicar em uma linha da tabela de solicitações de férias, exibindo todos os dados detalhados da solicitação, incluindo observações.
+## Problema Identificado
+
+O sistema externo (SIM) esta enviando o campo `department` como **UUID** (ex: `6a460ef3-5437-4441-9632-0f08e10bf618`) em vez de enviar o **nome do setor** (ex: `"Desenvolvimento"`). Por isso, o filtro por setor no frontend nao funciona -- o gestor Deivid ve solicitacoes de todos os setores, incluindo a da Bruna (CS).
+
+**Dados atuais no banco:**
+- Deivid Castilho: department = `3167e9c6-...`, `6a460ef3-...`
+- Rafael Coura: department = `6a460ef3-...`
+- Bruna Pereira da Cruz: department = `b916d8da-...`
+
+Todos com UUIDs, nenhum com nome legivel.
 
 ---
 
-## Alterações
+## Solucao
 
-**Arquivo:** `src/pages/gestores/SolicitacaoFerias.tsx`
+### 1. Webhook: Adicionar mapeamento de UUID para nome do setor
 
-1. **Adicionar estado para controlar o modal e a solicitação selecionada:**
-   - `selectedSolicitacao` para armazenar a solicitação clicada
-   - O Dialog abre quando `selectedSolicitacao` nao for null
+No arquivo `supabase/functions/webhook-vacation-request/index.ts`, adicionar um dicionario que mapeia os UUIDs dos departamentos do sistema externo para os nomes usados internamente. Quando o webhook receber um UUID no campo `department`, ele converte automaticamente para o nome correto antes de salvar.
 
-2. **Tornar as linhas da tabela clicaveis:**
-   - Adicionar `cursor-pointer` e `onClick` em cada `TableRow` para abrir o modal com os dados daquela solicitacao
+```text
+Exemplo de mapeamento:
+"6a460ef3-5437-4441-9632-0f08e10bf618" -> "Desenvolvimento"
+"b916d8da-30ea-4fce-a57c-a89f6c0cb217" -> "CS"
+"3167e9c6-3bf5-4013-8920-bae3a0963518" -> (setor do Deivid - precisa confirmar)
+```
 
-3. **Criar o Dialog com todos os dados:**
-   - Nome do colaborador
-   - Email
-   - Setor/Departamento
-   - Periodo (data inicio - data fim)
-   - Quantidade de dias
-   - Data da solicitacao
-   - Status (com icone e badge colorido)
-   - Aprovado por (se houver)
-   - Observacoes/Notas (campo `notes`)
-   - ID externo (`external_id`)
-   - Botoes de Aprovar/Reprovar (se status pendente)
+Se o UUID nao estiver no mapa, o valor original sera mantido (caso ja venha como string).
+
+### 2. Corrigir dados existentes no banco
+
+Executar um UPDATE nos registros existentes para substituir os UUIDs pelos nomes corretos dos setores.
+
+### 3. Frontend: nenhuma alteracao necessaria
+
+O codigo de `SolicitacaoFerias.tsx` ja filtra corretamente usando `.in("department", gestorDepartments)`. Uma vez que os dados estejam com nomes em vez de UUIDs, o filtro funcionara automaticamente.
+
+---
+
+## Pergunta necessaria
+
+Preciso confirmar o mapeamento correto de cada UUID para o nome do setor. Baseado nos dados:
+- `6a460ef3-5437-4441-9632-0f08e10bf618` = Desenvolvimento? (usado por Deivid e Rafael)
+- `b916d8da-30ea-4fce-a57c-a89f6c0cb217` = CS? (usado por Bruna)
+- `3167e9c6-3bf5-4013-8920-bae3a0963518` = ? (usado por Deivid em outra solicitacao)
+
+Alem disso, caso existam outros setores no sistema externo, o mapeamento completo seria necessario. Se voce puder fornecer a lista de UUIDs e seus setores correspondentes, a implementacao sera mais precisa.
 
 ---
 
 ## Detalhes Tecnicos
 
-**Imports adicionais:**
-- `Dialog, DialogContent, DialogHeader, DialogTitle` de `@/components/ui/dialog`
-- `Separator` de `@/components/ui/separator`
-- `useState` do React
+**Arquivo:** `supabase/functions/webhook-vacation-request/index.ts`
+- Adicionar constante `DEPARTMENT_UUID_MAP` com o mapeamento UUID -> nome
+- Antes de inserir no banco, verificar se `payload.employee.department` e um UUID e converter para o nome correspondente
 
-**Estado:**
-```text
-const [selectedSolicitacao, setSelectedSolicitacao] = useState<any | null>(null);
-```
+**Migracao SQL:**
+- UPDATE nas linhas existentes da tabela `vacation_requests` para corrigir os UUIDs para nomes
 
-**TableRow clicavel:**
-```text
-<TableRow 
-  key={sol.id} 
-  className="group cursor-pointer hover:bg-muted/50"
-  onClick={() => setSelectedSolicitacao(sol)}
->
-```
-
-**Estrutura do Dialog:**
-```text
-<Dialog open={!!selectedSolicitacao} onOpenChange={(open) => !open && setSelectedSolicitacao(null)}>
-  <DialogContent className="max-w-md">
-    <DialogHeader>
-      <DialogTitle>Detalhes da Solicitacao</DialogTitle>
-    </DialogHeader>
-    - Secao com nome, email, setor
-    - Separator
-    - Secao com periodo, dias, data solicitacao
-    - Separator
-    - Secao com status e aprovado por
-    - Separator
-    - Secao com observacoes (notes)
-    - Separator
-    - Secao com ID externo
-    - Botoes de acao (se pendente)
-  </DialogContent>
-</Dialog>
-```
-
-Os botoes de aprovar/reprovar dentro do modal fecharao o modal apos a acao, chamando `setSelectedSolicitacao(null)` no callback de sucesso da mutation.
+**Arquivos inalterados:**
+- `src/pages/gestores/SolicitacaoFerias.tsx` -- o filtro ja esta correto, so precisa dos dados corretos
 

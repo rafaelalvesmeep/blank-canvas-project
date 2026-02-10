@@ -1,0 +1,2 @@
+ALTER TABLE public.vacation_requests DROP CONSTRAINT vacation_requests_status_check;
+ALTER TABLE public.vacation_requests ADD CONSTRAINT vacation_requests_status_check CHECK (status = ANY (ARRAY['pendente', 'aprovada', 'reprovada', 'cancelada']));

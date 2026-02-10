@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { RegisterVacationDialog } from "@/components/gestores/RegisterVacationDialog";
 import { RegisterCreditDialog } from "@/components/gestores/RegisterCreditDialog";
+import { EditVacationPopover } from "@/components/gestores/EditVacationPopover";
 
 const MONTH_NAMES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
@@ -45,6 +46,14 @@ interface MonthVacation {
   label?: string;
   startDay?: number;
   endDay?: number;
+  requestId?: string;
+  requestData?: {
+    id: string;
+    employee_name: string;
+    start_date: string;
+    end_date: string;
+    days_count: number;
+  };
 }
 
 interface EmployeeVacationRow {
@@ -128,6 +137,31 @@ const ControleFerias = () => {
 
   const isLoading = isLoadingEmployees || isLoadingVacations;
 
+  // Helper: find matching employee by name (case-insensitive, partial match)
+  const findEmployeeByName = (name: string, employeeMap: Map<string, EmployeeVacationRow>): EmployeeVacationRow | undefined => {
+    const normalizedName = name.toUpperCase().trim();
+    // Exact match first
+    for (const emp of employeeMap.values()) {
+      if (emp.employeeName.toUpperCase().trim() === normalizedName) return emp;
+    }
+    // Partial match: check if request name is contained in employee name or vice versa
+    for (const emp of employeeMap.values()) {
+      const empUpper = emp.employeeName.toUpperCase().trim();
+      if (empUpper.includes(normalizedName) || normalizedName.includes(empUpper)) return emp;
+    }
+    // Match by first + last name tokens
+    const nameParts = normalizedName.split(/\s+/);
+    if (nameParts.length >= 2) {
+      const firstName = nameParts[0];
+      const lastName = nameParts[nameParts.length - 1];
+      for (const emp of employeeMap.values()) {
+        const empUpper = emp.employeeName.toUpperCase().trim();
+        if (empUpper.includes(firstName) && empUpper.includes(lastName)) return emp;
+      }
+    }
+    return undefined;
+  };
+
   const processVacationData = (): EmployeeVacationRow[] => {
     const employeeMap = new Map<string, EmployeeVacationRow>();
 
@@ -160,19 +194,24 @@ const ControleFerias = () => {
         return;
       }
 
-      // Get or create employee entry (for employees that exist only in vacation_requests)
+      // Try to match to existing employee by employee_id first, then by name
       let employee = employeeMap.get(request.employee_id);
       if (!employee) {
+        employee = findEmployeeByName(request.employee_name, employeeMap);
+      }
+      
+      if (!employee) {
+        // Fallback: create entry only if no match found at all
         employee = {
           employeeId: request.employee_id,
           employeeName: request.employee_name,
           department: request.department,
           status: "Ativo",
           vencimento: "-",
-          saldoInicio: 30,
+          saldoInicio: 20,
           teamLeader: request.approved_by || "-",
           meses: Array(12).fill(null).map(() => ({ type: "vazio" as const })),
-          saldoFinal: 30,
+          saldoFinal: 20,
           totalDiasUsados: 0,
         };
         employeeMap.set(request.employee_id, employee);
@@ -196,6 +235,14 @@ const ControleFerias = () => {
             label: `férias`,
             startDay,
             endDay,
+            requestId: request.id,
+            requestData: {
+              id: request.id,
+              employee_name: request.employee_name,
+              start_date: request.start_date,
+              end_date: request.end_date,
+              days_count: request.days_count,
+            },
           };
         }
       }
@@ -232,14 +279,24 @@ const ControleFerias = () => {
       );
     }
 
-    return (
-      <div className="bg-primary text-primary-foreground text-[10px] leading-tight px-2 py-1.5 rounded-md text-center font-medium shadow-sm">
+    const cellContent = (
+      <div className="bg-primary text-primary-foreground text-[10px] leading-tight px-2 py-1.5 rounded-md text-center font-medium shadow-sm cursor-pointer hover:bg-primary/80 transition-colors">
         <div>Férias</div>
         <div className="opacity-80">
           {monthData.startDay?.toString().padStart(2, "0")}-{monthData.endDay?.toString().padStart(2, "0")}
         </div>
       </div>
     );
+
+    if (monthData.requestData) {
+      return (
+        <EditVacationPopover vacation={monthData.requestData}>
+          {cellContent}
+        </EditVacationPopover>
+      );
+    }
+
+    return cellContent;
   };
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);

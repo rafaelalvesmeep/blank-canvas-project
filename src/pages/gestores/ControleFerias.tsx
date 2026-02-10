@@ -365,8 +365,8 @@ const ControleFerias = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        {(isAdmin || (selectedSector || gestorDepartments.length > 0)) && (
+        {/* Action Buttons - only show when sector is active */}
+        {(!isAdmin || selectedSector) && (isAdmin || gestorDepartments.length > 0) && (
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" onClick={() => setShowVacationDialog(true)} disabled={employees.length === 0}>
               <Plus className="h-4 w-4 mr-1.5" />
@@ -381,12 +381,17 @@ const ControleFerias = () => {
 
         {/* Warning for admins without sector selected */}
         {isAdmin && !selectedSector && (
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Selecione um setor para visualizar o controle de férias.
-            </AlertDescription>
-          </Alert>
+          <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+            <div className="p-4 rounded-full bg-muted">
+              <CalendarRange className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium">Selecione um setor</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Escolha um setor no filtro acima para visualizar o controle de férias dos colaboradores.
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Warning for managers without sectors */}
@@ -399,8 +404,9 @@ const ControleFerias = () => {
           </Alert>
         )}
 
-        {/* Stats Cards - Compact */}
-        <div className="grid gap-3 grid-cols-3">
+        {/* Content - only show when sector is active */}
+        {(!isAdmin || selectedSector) && (<>
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
           <Card className="border-0 shadow-sm bg-muted/30">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -560,6 +566,7 @@ const ControleFerias = () => {
             </div>
           </div>
         )}
+        </>)}
       </div>
 
       {/* Dialogs */}

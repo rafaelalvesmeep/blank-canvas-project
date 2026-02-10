@@ -1,0 +1,1 @@
+ALTER TABLE public.employees ALTER COLUMN vacation_balance SET DEFAULT 20;

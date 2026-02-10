@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, FileText, Loader2, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, FileText, Loader2, AlertCircle, User, Mail, Building, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/integrations/supabase/safeClient";
@@ -18,6 +18,9 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 
 const SECTOR_LABEL_MAP: Record<string, string> = {
   administrativo: "Administrativo",
@@ -64,6 +67,7 @@ const StatusIcon = ({ status }: { status: string }) => {
 export default function SolicitacaoFerias() {
   const queryClient = useQueryClient();
   const { profile, sectors, isGestor, isAdmin } = useAuth();
+  const [selectedSolicitacao, setSelectedSolicitacao] = useState<any | null>(null);
 
   // Map sectors to department labels for filtering
   const gestorDepartments = sectors.map(s => SECTOR_LABEL_MAP[s] || s);
@@ -111,6 +115,7 @@ export default function SolicitacaoFerias() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["vacation-requests"] });
       queryClient.invalidateQueries({ queryKey: ["vacation-requests-approved"] });
+      setSelectedSolicitacao(null);
       toast.success(
         variables.status === "aprovada"
           ? "Solicitação aprovada com sucesso!"
@@ -273,7 +278,7 @@ export default function SolicitacaoFerias() {
                 </TableHeader>
                 <TableBody>
                   {solicitacoes.map((sol) => (
-                    <TableRow key={sol.id} className="group">
+                    <TableRow key={sol.id} className="group cursor-pointer hover:bg-muted/50" onClick={() => setSelectedSolicitacao(sol)}>
                       <TableCell>
                         <div>
                           <p className="text-sm font-medium">{sol.employee_name}</p>
@@ -335,6 +340,120 @@ export default function SolicitacaoFerias() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de Detalhes */}
+      <Dialog open={!!selectedSolicitacao} onOpenChange={(open) => !open && setSelectedSolicitacao(null)}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Solicitação</DialogTitle>
+          </DialogHeader>
+
+          {selectedSolicitacao && (
+            <div className="space-y-4">
+              {/* Colaborador */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">{selectedSolicitacao.employee_name}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{selectedSolicitacao.employee_email}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <span>{selectedSolicitacao.department}</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Período */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Período</p>
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    {format(new Date(selectedSolicitacao.start_date), "dd/MM/yyyy", { locale: ptBR })} –{" "}
+                    {format(new Date(selectedSolicitacao.end_date), "dd/MM/yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="secondary" className="text-xs">{selectedSolicitacao.days_count} dias</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Solicitado em {format(new Date(selectedSolicitacao.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Status */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</p>
+                <div className="flex items-center gap-1.5">
+                  <StatusIcon status={selectedSolicitacao.status} />
+                  <Badge variant="outline" className={`text-xs ${statusColors[selectedSolicitacao.status]}`}>
+                    {selectedSolicitacao.status}
+                  </Badge>
+                </div>
+                {selectedSolicitacao.approved_by && (
+                  <p className="text-xs text-muted-foreground">
+                    Aprovado por: <span className="font-medium">{selectedSolicitacao.approved_by}</span>
+                  </p>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Observações */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Observações</p>
+                <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">
+                  {selectedSolicitacao.notes || "Nenhuma observação registrada."}
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* ID Externo */}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Hash className="h-3.5 w-3.5" />
+                <span>ID Externo: {selectedSolicitacao.external_id}</span>
+              </div>
+
+              {/* Ações */}
+              {selectedSolicitacao.status === "pendente" && (
+                <>
+                  <Separator />
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => handleReject(selectedSolicitacao.id)}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Reprovar
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="bg-success hover:bg-success/90"
+                      onClick={() => handleApprove(selectedSolicitacao.id, selectedSolicitacao.department)}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Aprovar
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

@@ -1,7 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 
-let client: SupabaseClient<Database> | null = null;
+let client: SupabaseClient | null = null;
 
 function resolveSupabaseUrl(): string | null {
   const directUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -22,7 +21,7 @@ function resolveSupabaseKey(): string | null {
  * Safe getter to avoid blank-screen crashes when env vars aren't injected yet.
  * Returns null when the backend env is missing.
  */
-export function getSupabaseClient(): SupabaseClient<Database> | null {
+export function getSupabaseClient(): SupabaseClient | null {
   if (client) return client;
 
   const url = resolveSupabaseUrl();
@@ -30,7 +29,7 @@ export function getSupabaseClient(): SupabaseClient<Database> | null {
 
   if (!url || !key) return null;
 
-  client = createClient<Database>(url, key, {
+  client = createClient(url, key, {
     auth: {
       storage: localStorage,
       persistSession: true,

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 import { getSupabaseClient } from "@/integrations/supabase/safeClient";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,7 +31,7 @@ interface MediaItem {
 }
 
 export default function ModoTV() {
-  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient<Database> | null>(null);
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null);
   const [envMissing, setEnvMissing] = useState(false);
 
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
@@ -53,7 +52,7 @@ export default function ModoTV() {
       return;
     }
 
-    setSupabaseClient(supabase as unknown as SupabaseClient<Database>);
+    setSupabaseClient(supabase);
   }, []);
 
   const fetchMedia = async () => {
